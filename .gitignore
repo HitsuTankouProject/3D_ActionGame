@@ -1,0 +1,48 @@
+# Unity specific ignores
+Library/
+Temp/
+Logs/
+Obj/
+MemoryCaptures/
+
+# User settings
+UserSettings/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+
+# Visual Studio / Rider
+*.csproj
+*.vsconfig
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+
+# Build results
+Build/
+Builds/
+
+# Android
+.gradle/
+*.apk
+*.aab
+
+# Unity package
+*.unitypackage
+
+# Mac
+.DS_Store
+
+# Unity settings
+UserSettings/EditorUserSettings.asset
+ProjectSettings/SceneTemplateSettings.json
