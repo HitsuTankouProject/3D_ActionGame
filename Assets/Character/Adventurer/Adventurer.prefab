@@ -1624,6 +1624,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1994345196596875783}
+  - component: {fileID: 7468834943659255671}
   - component: {fileID: 3714336361411374341}
   - component: {fileID: 3739402100446736329}
   - component: {fileID: 4750400405985950585}
@@ -1651,6 +1652,30 @@ Transform:
   - {fileID: 6480566174884889551}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &7468834943659255671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520019429336728101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 490aeeaf5d4d4014db2566e07792752d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Adventurer
+  status:
+    Lv: 0
+    LevelPoint: 0
+    HpLv: 0
+    DefLv: 0
+    AtkLv: 0
+    PassiveLv: 0
+    ActiveLv: 0
+    UltLv: 0
+  characterMesh: {fileID: 3207542302341819235}
+  characterAnimator: {fileID: 3714336361411374341}
+  stage: 0
 --- !u!95 &3714336361411374341
 Animator:
   serializedVersion: 7
@@ -1695,7 +1720,7 @@ CapsuleCollider:
   m_Radius: 0.32
   m_Height: 1.29
   m_Direction: 1
-  m_Center: {x: 0, y: 0.73, z: 0}
+  m_Center: {x: 0, y: 0.67, z: 0}
 --- !u!54 &4750400405985950585
 Rigidbody:
   m_ObjectHideFlags: 0

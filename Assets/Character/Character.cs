@@ -56,8 +56,8 @@ public abstract class Character : MonoBehaviour
 
     private const string attack01Trigger        = "Attack_01";
     private const string attack02Trigger        = "Attack_02";
-    private const string runTrigger             = "Run";
-    private const string passiveSkillTrigger    = "PassiveSkill";
+    private const string runBool                = "Run";
+    private const string passiveSkillBool       = "PassiveSkill";
     private const string activeSkillTrigger     = "ActiveSkill";
     private const string ultSkillTrigger        = "UltSkill";
 
@@ -72,6 +72,11 @@ public abstract class Character : MonoBehaviour
 
         useFirstAttack = !useFirstAttack;
     }
+    protected void Animation_Run()
+    {
+        if (!characterAnimator.GetBool(runBool)) characterAnimator.SetBool(runBool, true);
+    }
+
 
     private bool IsAllowCommand() => stage != PlayerStage.Hit && stage != PlayerStage.Death;
     private bool canDoNextCommand = true;
@@ -85,9 +90,9 @@ public abstract class Character : MonoBehaviour
     {
         switch (playerStage)
         {
-            case PlayerStage.Run: characterAnimator.SetBool(runTrigger, true); break;
+            case PlayerStage.Run: Animation_Run(); break;
             case PlayerStage.Attack: Animation_Attack(); break;
-            case PlayerStage.PassiveSkill: characterAnimator.SetBool(passiveSkillTrigger, true); break;
+            case PlayerStage.PassiveSkill: characterAnimator.SetBool(passiveSkillBool, true); break;
             case PlayerStage.ActiveSkill: characterAnimator.SetTrigger(activeSkillTrigger); break;
             case PlayerStage.UltSkill: characterAnimator.SetTrigger(ultSkillTrigger); break;
             default: break;
@@ -96,8 +101,8 @@ public abstract class Character : MonoBehaviour
 
     public void RequestChangeStage(PlayerStage playerStage, Vector3 faceTo)
     {
-        if (!IsAllowCommand()|| !canDoNextCommand) return;
-        canDoNextCommand = false;
+        if (!IsAllowCommand() || !canDoNextCommand) return;
+        //canDoNextCommand = false;
 
         Vector3 direction = faceTo - transform.position;
         direction.y = 0f;
@@ -107,7 +112,20 @@ public abstract class Character : MonoBehaviour
         PlayAnimation(playerStage, faceTo);
     }
 
+    public void ReturnIdle()
+    {
+        stage = PlayerStage.Idle;
 
+        characterAnimator.SetBool(runBool, false);
+        characterAnimator.SetBool(passiveSkillBool, false);
+
+
+        characterAnimator.ResetTrigger(attack01Trigger);
+        characterAnimator.ResetTrigger(attack02Trigger);
+
+        characterAnimator.ResetTrigger(activeSkillTrigger);
+        characterAnimator.ResetTrigger(ultSkillTrigger);
+    }
 
 
 
