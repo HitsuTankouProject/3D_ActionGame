@@ -19,10 +19,10 @@ public class InputManager : MonoBehaviour
     private void Update()
     {
         if (_character == null) return;
-        //if (Keyboard.current.wKey.isPressed)
-        //{
-        //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.forward);
-        //}
+        if (Keyboard.current.wKey.isPressed)
+        {
+            _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.forward);
+        }
         //if (Keyboard.current.aKey.isPressed)
         //{
         //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.left);
@@ -43,7 +43,7 @@ public class InputManager : MonoBehaviour
         //}
         if (Keyboard.current.lKey.wasPressedThisFrame)
         {
-            _character.RequestChangeStage(PlayerStage.Attack, _character.transform.position + Vector3.back);
+            _character.RequestChangeStage(PlayerStage.Attack, _character.transform.position + Vector3.forward);
         }
     }
 }

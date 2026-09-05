@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using System;
+using System.Data;
 using System.Security.Cryptography;
 using System.Threading;
 using Unity.VisualScripting;
@@ -79,7 +80,7 @@ public abstract class Character : MonoBehaviour, IDamage
 
 
     private bool IsAllowCommand() => stage != PlayerStage.Hit && stage != PlayerStage.Death;
-    private bool canDoNextCommand = true;
+    public bool canDoNextCommand = true;
 
     public void CanDoNextCommand() => canDoNextCommand = true;
     public void CancelCommand() => characterAnimator.SetTrigger(cancelTrigger);
@@ -107,6 +108,42 @@ public abstract class Character : MonoBehaviour, IDamage
 
         stage = playerStage;
         PlayAnimation(playerStage, faceTo);
+        WaitTheNextAction();
+    }
+
+    private CancellationTokenSource actionToken;
+    private float _commandTime => GameManager.commandTime;
+    private void WaitTheNextAction()
+    {
+        if (actionToken != null)
+        {
+            actionToken?.Dispose();
+            actionToken = null;
+        }
+
+
+        AutoTurnToIdle(actionToken).Forget();
+    }
+    private async UniTask AutoTurnToIdle(CancellationTokenSource token)
+    {
+        while (!canDoNextCommand) await UniTask.Yield();
+
+        float timer = 0.0f;
+        while (canDoNextCommand)
+        {
+            if (!canDoNextCommand) return;
+            timer += Time.deltaTime;
+
+            if(timer> _commandTime)
+            {
+                ReturnIdle();
+                return;
+            }
+            Debug.Log(timer);
+            await UniTask.Yield();
+        }
+
+
     }
 
     public void ReturnIdle()
@@ -192,10 +229,23 @@ public abstract class Character : MonoBehaviour, IDamage
 
     #endregion
 
+    #region Weapon
     [Header("Character Weapon")]
     public Weapon mainWeapon;
     public void UseMainWeapon()=> mainWeapon.OpenTheBox();
     public void NoneUseMainWeapon() => mainWeapon.CloseTheBox();
+
+    #endregion
+
+    #region ActionProcess
+    
+    public void Move(Vector3 faceTo)
+    {
+        RequestChangeStage(PlayerStage.Run, faceTo);
+        transform.position += transform.forward * Time.deltaTime * 4.0f;
+    }
+
+    #endregion
 
 
 }

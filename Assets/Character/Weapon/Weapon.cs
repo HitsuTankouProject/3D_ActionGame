@@ -24,7 +24,14 @@ public abstract class Weapon : MonoBehaviour
     public virtual void CloseTheBox() => weaponCollider.enabled = false;
 
     public int DoDamage() => Mathf.FloorToInt(weaponUser.atkIndex * weaponStatus.atkBuffInfex);
-    public abstract void WeaponReaction(Collider other);
+    public virtual void WeaponReaction(Collider other)
+    {
+        other.TryGetComponent<IDamage>(out IDamage result);
+        if (result == null) return;
+        result.GotDamage(DoDamage());
+
+
+    }
 
     private void OnTriggerEnter(Collider other) => WeaponReaction(other);
 

@@ -110,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Sword
   weaponUser: {fileID: 0}
   weaponCollider: {fileID: 992961892682387579}
-  atkBuffInfex: 0
+  atkBuffInfex: 1.01
 --- !u!65 &992961892682387579
 BoxCollider:
   m_ObjectHideFlags: 0
