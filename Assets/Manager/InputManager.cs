@@ -14,37 +14,36 @@ public class InputManager : MonoBehaviour
     private float _commandTime => GameManager.commandTime;
     public Character _character => _gameManager.player.controlling_Character;
 
-    //private CancellationTokenSource waitCommandToken;
-    //private bool canAllowCommand => waitCommandToken != null && !waitCommandToken.IsCancellationRequested;
-
-    //private void StartCountingCommandTime()
-    //{
-
-    //}
+    
 
     private void Update()
     {
         if (_character == null) return;
-        if (Keyboard.current.wKey.isPressed)
-        {
-            _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.forward);
-        }
-        if (Keyboard.current.aKey.isPressed)
-        {
-            _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.left);
-        }
-        if (Keyboard.current.sKey.isPressed)
-        {
-            _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.back);
-        }
-        if (Keyboard.current.dKey.isPressed)
-        {
-            _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.right);
-        }
+        //if (Keyboard.current.wKey.isPressed)
+        //{
+        //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.forward);
+        //}
+        //if (Keyboard.current.aKey.isPressed)
+        //{
+        //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.left);
+        //}
+        //if (Keyboard.current.sKey.isPressed)
+        //{
+        //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.back);
+        //}
+        //if (Keyboard.current.dKey.isPressed)
+        //{
+        //    _character.RequestChangeStage(PlayerStage.Run, _character.transform.position + Vector3.right);
+        //}
 
-        if (Keyboard.current.wKey.wasReleasedThisFrame || Keyboard.current.aKey.wasReleasedThisFrame || Keyboard.current.sKey.wasReleasedThisFrame || Keyboard.current.dKey.wasReleasedThisFrame)
+        //if (Keyboard.current.wKey.wasReleasedThisFrame || Keyboard.current.aKey.wasReleasedThisFrame || Keyboard.current.sKey.wasReleasedThisFrame || Keyboard.current.dKey.wasReleasedThisFrame)
+        //{
+
+        //    _character.ReturnIdle();
+        //}
+        if (Keyboard.current.lKey.wasPressedThisFrame)
         {
-            _character.ReturnIdle();
+            _character.RequestChangeStage(PlayerStage.Attack, _character.transform.position + Vector3.back);
         }
     }
 }

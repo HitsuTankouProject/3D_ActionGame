@@ -9,12 +9,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 using DataBase;
-using WebSocketSharp;
 using static DataBase.DatabaseConnectJson;
-using Mono.Cecil.Cil;
-using UnityEditor.PackageManager.Requests;
-
-
 
 public class NetworkManager : MonoBehaviour
 {
@@ -41,63 +36,58 @@ public class NetworkManager : MonoBehaviour
 
     public void ConnectToServer() => ServerConnection().Forget();
 
-    // Database Connection
-
     [SerializeField] private LoginData loginData = new();
 
     private CancellationTokenSource dataBaseAccess;
 
     private bool isDataBaseAccessing = false;
-
-    private async UniTask<bool> IsDataBaseAccessSuccess(Func<CancellationToken, UniTask> access, float timeoutSeconds)
+    private async UniTask<bool> IsDataBaseAccessSuccess(Func<CancellationToken, UniTask> access, int tryCount = 10)
     {
         if (isDataBaseAccessing)
         {
-            Debug.LogWarning("Database In Progress.");
+            Debug.LogWarning("Database access is already in progress.");
             return false;
         }
-
         isDataBaseAccessing = true;
-
-        dataBaseAccess?.Dispose();
-        dataBaseAccess = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-        dataBaseAccess.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
         try
         {
-            await access(dataBaseAccess.Token);
-            //Å@The Token's Task Run As Usually
-            Debug.Log("Database Access Successful.");
-            return true;
-        }
-        //Å@The Token's Task Closed As Non Usually
-        catch (OperationCanceledException)
-        {
-            if (destroyCancellationToken.IsCancellationRequested)
-                Debug.Log("Database Access Canceled Because The Object Was Destroyed.");
-            else Debug.LogError("Database Access Timeout.");
+            dataBaseAccess = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+
+            for (int attempt = 1; attempt <= tryCount; attempt++)
+            {
+                try
+                {
+                    dataBaseAccess.Token.ThrowIfCancellationRequested();
+
+                    await access(dataBaseAccess.Token);
+
+                    Debug.Log("Database access successful.");
+                    return true;
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.LogWarning("Database access canceled.");
+                    return false;
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"Attempt {attempt}/{tryCount} failed: {exception.Message}");
+                }
+            }
 
             return false;
-
         }
-        // Any Others Errors likes Network Error, JSON Error, etc. 
-        catch (Exception exception)
-        {
-            Debug.LogError($"Database access failed: {exception.Message}");
-            return false;
-
-        }
-        // Finally Block to Clean Up Resources
         finally
         {
             isDataBaseAccessing = false;
-
             dataBaseAccess?.Dispose();
             dataBaseAccess = null;
-
         }
 
+
     }
+
 
     #region Account 
     // 
@@ -129,8 +119,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestAccountApply(string username)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => AccountApply(token, username), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => AccountApply(token, username));
     }
     //
     private async UniTask<bool> AccountCertification(CancellationToken token, string email, string authCode)
@@ -154,8 +143,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestAccountCertification(string email, string authCode)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => AccountCertification(token, email, authCode), timeoutSeconds); ;
+        return await IsDataBaseAccessSuccess(token => AccountCertification(token, email, authCode));
     }
     //
     private async UniTask<bool> AccountCreate(CancellationToken token, string email, string name, string inputPassword)
@@ -179,8 +167,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestAccountCreate(string email, string name, string inputPassword)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => AccountCreate(token, email, name, inputPassword), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => AccountCreate(token, email, name, inputPassword));
     }
 
     //
@@ -204,8 +191,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestAccountLogin(string account, string inputPassword)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => AccountLogin(token, account, inputPassword), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => AccountLogin(token, account, inputPassword));
     }
     //
     private async UniTask<bool> AccountOut(CancellationToken token, string code)
@@ -228,8 +214,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestAccountOut()
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => AccountOut(token, loginData.security_code), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => AccountOut(token, loginData.security_code));
     }
 
     #endregion
@@ -256,8 +241,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestUpdateCharacterData(CharacterType name, CharacterStatus status)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => UpdateCharacterData(token, name, status), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => UpdateCharacterData(token, name, status));
     }
 
     private async UniTask<bool> UpdateBagData(CancellationToken token, PlayerItem[] changeItems)
@@ -280,8 +264,7 @@ public class NetworkManager : MonoBehaviour
     }
     public async UniTask<bool> RequestUpdateBagData(PlayerItem[] changeItems)
     {
-        float timeoutSeconds = 10f;
-        return await IsDataBaseAccessSuccess(token => UpdateBagData(token, changeItems), timeoutSeconds);
+        return await IsDataBaseAccessSuccess(token => UpdateBagData(token, changeItems));
     }
 
     private async UniTask<string> GetData(CancellationToken token, AllowedPurpose allowedPurpose)
@@ -308,10 +291,8 @@ public class NetworkManager : MonoBehaviour
     }
     private async UniTask<(bool isSuccess, string gotData)> RequestGetData(AllowedPurpose allowedPurpose)
     {
-        float timeoutSeconds = 15f;
         string data = null;
-
-        await IsDataBaseAccessSuccess(async token => { data = await GetData(token, allowedPurpose); }, timeoutSeconds);
+        await IsDataBaseAccessSuccess(async token => { data = await GetData(token, allowedPurpose); }, 15);
         bool success = data != null;
 
 
@@ -352,4 +333,5 @@ public class NetworkManager : MonoBehaviour
 
 
     #endregion 
+
 }

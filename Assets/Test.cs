@@ -80,9 +80,6 @@ public class Test : MonoBehaviour
         allCharacterData = await _networkManager.GotData_AllCharacter();
 
         Debug.Log(allCharacterData.Adventurer.AllStatus());
-        Debug.Log(allCharacterData.Magician.AllStatus());
-        Debug.Log(allCharacterData.Thief.AllStatus());
-        Debug.Log(allCharacterData.Warrior.AllStatus());
 
     }
 
@@ -112,7 +109,5 @@ public class Test : MonoBehaviour
         if (success) Debug.Log("Account Apply Success");
         else Debug.LogError("Account Apply Failed");
     }
-
-
 
 }

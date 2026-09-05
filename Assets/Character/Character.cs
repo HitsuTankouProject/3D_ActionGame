@@ -36,28 +36,28 @@ public struct CharacterStatus
     }
 
     public string AllStatus() =>
-    $"Lv: {Lv}, LevelPoint: {LevelPoint}, HpLv: {HpLv}, DefLv: {DefLv}, " +
-    $"AtkLv: {AtkLv}, PassiveLv: {PassiveLv}, ActiveLv: {ActiveLv}, UltLv: {UltLv}";
+    $" Lv: {Lv}, LevelPoint: {LevelPoint} \n HpLv: {HpLv}, DefLv: {DefLv}\n" +
+    $"AtkLv: {AtkLv}, PassiveLv: {PassiveLv}\n ActiveLv: {ActiveLv}, UltLv: {UltLv}";
 }
 
 public enum PlayerStage { Idle, Run, Attack, PassiveSkill, ActiveSkill, UltSkill, Hit, Death }
 
-public abstract class Character : MonoBehaviour 
+public abstract class Character : MonoBehaviour, IDamage
 {
-    [Header("Character Status")]
+    [Header("Character Basic")]
     public CharacterStatus status;
     public SkinnedMeshRenderer characterMesh;
     public Animator characterAnimator;
-    private AnimatorStateInfo stateInfo => characterAnimator.GetCurrentAnimatorStateInfo(0);
-
 
     [Header("Character Stage")]
     public PlayerStage stage;
+    #region Animation
+    private const string cancelTrigger          = "Cancel";
 
     private const string attack01Trigger        = "Attack_01";
     private const string attack02Trigger        = "Attack_02";
     private const string runBool                = "Run";
-    private const string passiveSkillBool       = "PassiveSkill";
+    private const string passiveSkill           = "PassiveSkill";
     private const string activeSkillTrigger     = "ActiveSkill";
     private const string ultSkillTrigger        = "UltSkill";
 
@@ -80,19 +80,16 @@ public abstract class Character : MonoBehaviour
 
     private bool IsAllowCommand() => stage != PlayerStage.Hit && stage != PlayerStage.Death;
     private bool canDoNextCommand = true;
+
     public void CanDoNextCommand() => canDoNextCommand = true;
-    public void CancelCommand()
-    {
-        characterAnimator.Play(stateInfo.fullPathHash, 0, 1f);
-        characterAnimator.Update(0f);
-    }
+    public void CancelCommand() => characterAnimator.SetTrigger(cancelTrigger);
     private void PlayAnimation(PlayerStage playerStage, Vector3 faceTo)
     {
         switch (playerStage)
         {
             case PlayerStage.Run: Animation_Run(); break;
             case PlayerStage.Attack: Animation_Attack(); break;
-            case PlayerStage.PassiveSkill: characterAnimator.SetBool(passiveSkillBool, true); break;
+            case PlayerStage.PassiveSkill: characterAnimator.SetTrigger(passiveSkill); break;
             case PlayerStage.ActiveSkill: characterAnimator.SetTrigger(activeSkillTrigger); break;
             case PlayerStage.UltSkill: characterAnimator.SetTrigger(ultSkillTrigger); break;
             default: break;
@@ -102,8 +99,8 @@ public abstract class Character : MonoBehaviour
     public void RequestChangeStage(PlayerStage playerStage, Vector3 faceTo)
     {
         if (!IsAllowCommand() || !canDoNextCommand) return;
-        //canDoNextCommand = false;
-
+        canDoNextCommand = false;
+        CancelCommand();
         Vector3 direction = faceTo - transform.position;
         direction.y = 0f;
         if (direction.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(direction);
@@ -117,9 +114,8 @@ public abstract class Character : MonoBehaviour
         stage = PlayerStage.Idle;
 
         characterAnimator.SetBool(runBool, false);
-        characterAnimator.SetBool(passiveSkillBool, false);
 
-
+        characterAnimator.ResetTrigger(passiveSkill);
         characterAnimator.ResetTrigger(attack01Trigger);
         characterAnimator.ResetTrigger(attack02Trigger);
 
@@ -127,22 +123,12 @@ public abstract class Character : MonoBehaviour
         characterAnimator.ResetTrigger(ultSkillTrigger);
     }
 
+    #endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    #region Status Change
     public abstract int maxHp { get; }
+    public int nowHp {  get; private set; }
+    public abstract int atkIndex { get; }
 
     private struct StatusPair
     {
@@ -191,8 +177,25 @@ public abstract class Character : MonoBehaviour
     }
     public abstract int GotHitHpLost(int damage);
 
+    public virtual void GotHit(int damage)
+    {
+        int final = nowHp - damage;
+        nowHp = final < 0 ? 0 : final;
+    }
+    public virtual void Recover(int index)
+    {
+        int final = nowHp + index;
+        nowHp = final > maxHp ? maxHp : final;
+    }
 
+    public void GotDamage(int damage) => GotHit(GotHitHpLost(damage));
 
+    #endregion
+
+    [Header("Character Weapon")]
+    public Weapon mainWeapon;
+    public void UseMainWeapon()=> mainWeapon.OpenTheBox();
+    public void NoneUseMainWeapon() => mainWeapon.CloseTheBox();
 
 
 }

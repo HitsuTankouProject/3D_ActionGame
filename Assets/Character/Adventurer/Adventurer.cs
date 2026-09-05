@@ -15,6 +15,8 @@ public class Adventurer : Character
     private const int initAtk = 200;
 
     public override int maxHp => FinallyStatus(initHp, status.HpLv);
+    
+    public override int atkIndex => FinallyStatus(initAtk, status.AtkLv);
 
     public override int GotHitHpLost(int damage)
     {
@@ -45,9 +47,9 @@ public class Adventurer : Character
         return totalDamage;
     }
 
-    public void Start()
+    public override void GotHit(int damage)
     {
-        characterAnimator.SetBool("IsIdle", true);
+        base.GotHit(damage);
     }
 
 
