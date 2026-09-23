@@ -7,7 +7,7 @@ using UnityEngine.TextCore.Text;
 
 public class AccountInformate : MonoBehaviour
 {
-    private NetworkManager _networkManager => GameManager.Instance.networkManager;
+    private NetworkManager _networkManager => NetworkManager.Instance;
 
     [Header("DeBug")]
     public TMP_Text debug;
@@ -168,7 +168,7 @@ public class AccountInformate : MonoBehaviour
         if (System.Enum.IsDefined(typeof(CharacterType), index)) character = (CharacterType)index;
     }
 
-    private CharacterStatus characterStatus = new CharacterStatus(1, 0, 1, 1, 1, 1, 1, 1);
+    private Status characterStatus = new Status(1, 0, 1, 1, 1, 1, 1, 1);
     public TMP_Text[] statusTexts;
     
     public PlayerBag playerBag;

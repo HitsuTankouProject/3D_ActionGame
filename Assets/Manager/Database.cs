@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DataBase
 {
@@ -137,9 +137,9 @@ namespace DataBase
         private class CharacterData
         {
             public string character_name;
-            public CharacterStatus character_status;
+            public Status character_status;
 
-            public CharacterData(CharacterType name, CharacterStatus status)
+            public CharacterData(CharacterType name, Status status)
             {
                 character_name = name.ToString();
                 character_status = status;
@@ -191,7 +191,7 @@ namespace DataBase
 
         }
 
-        public static string Json_UpdateData_Character(string aCode, string sCode, CharacterType name, CharacterStatus status)
+        public static string Json_UpdateData_Character(string aCode, string sCode, CharacterType name, Status status)
         {
 
             UpdateData_Character updateData = new UpdateData_Character(aCode, sCode, AllowedPurpose.Character, new CharacterData(name, status));
@@ -247,10 +247,10 @@ namespace DataBase
     [System.Serializable]
     public class AllCharacterData
     {
-        public CharacterStatus Adventurer;
-        public CharacterStatus Magician;
-        public CharacterStatus Thief;
-        public CharacterStatus Warrior;
+        public Status Adventurer;
+        public Status Magician;
+        public Status Thief;
+        public Status Warrior;
     }
 
 
