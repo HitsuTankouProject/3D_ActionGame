@@ -3,9 +3,6 @@
 public class Sword : Weapon
 {
     public override WeaponType weaponType => WeaponType.Sword;
-    [Header("Sword")]
-    public float atkBuffIndex;
-    public override WeaponStatus weaponStatus => new WeaponStatus(atkBuffIndex, 0);
 
     public override void WeaponReaction(Collider other)
     {

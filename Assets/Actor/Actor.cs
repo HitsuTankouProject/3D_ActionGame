@@ -18,7 +18,7 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
     [Header("Actor Basic")]
     [SerializeField] protected SkinnedMeshRenderer actorBodyMesh;
-    public ActorStatus actorStatus = new();
+    public ActorStatus actorStatus;
 
     [SerializeField] protected Animator actorAnimator;
     [SerializeField] protected CharacterController characterController;
@@ -26,11 +26,9 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
     #region Status
     [Header("Actor Status")]
-    public abstract List<LevelScalePair> allLevelScalePairs { get; }
 
     #region Hp
 
-    public abstract int initHp { get; }
     public int maxHp;
 
     [Networked, OnChangedRender(nameof(OnHpChanged))]
@@ -60,30 +58,17 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     #endregion
 
     #region Atk
-    /// <summary>
-    /// レベル1時点の基礎攻撃力を取得します。
-    /// 派生クラスで職業ごとの値を定義します。
-    /// </summary>
-    public abstract int initAtk { get; }
+
     /// <summary> 攻撃力レベルの補正を適用した現在の攻撃力を取得します。 </summary>
     public int atkIndex {  get; protected set; }
 
     #endregion
 
     #region Def
-    /// <summary>
-    /// レベル1時点の基礎防御力を取得します。
-    /// 派生クラスでキャラクターごとの値を定義します。
-    /// </summary>
-    public abstract int initDef { get; }
+
     /// <summary> 防御力レベルの補正を適用した現在の防御力を取得します。 </summary>
     private int defValue;
 
-    /// <summary>
-    /// 防御力に適用する最小倍率を取得します。
-    /// 派生クラスで職業ごとの値を定義します。
-    /// </summary>
-    protected abstract float minDefScale { get; }
     /// <summary>
     /// 現在の防御力倍率。
     /// </summary>
@@ -96,7 +81,7 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     /// <summary>
     /// 防御力倍率を最小倍率へ戻します。
     /// </summary>
-    public void ReturnToMinDefScale() => nowDefScale = minDefScale;
+    public void ReturnToMinDefScale() => nowDefScale = actorStatus.actorBasicStatus.actorMinDefScale;
 
     #endregion
 
@@ -126,9 +111,9 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
             // 防御倍率が最低値を下回る場合は最低値に制限し、
             // 残りのダメージをまとめて計算する。
-            if (defScale < minDefScale)
+            if (defScale < actorStatus.actorBasicStatus.actorMinDefScale)
             {
-                defScale = minDefScale;
+                defScale = actorStatus.actorBasicStatus.actorMinDefScale;
                 index = damage_per_defValue;
             }
             // 1回につき、防御力1回分までのダメージを計算する。
@@ -200,9 +185,9 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
     protected virtual void AllStatusInit()
     {
-        maxHp = actorStatus.FinalHpIndex(initHp);
-        atkIndex = actorStatus.FinalAtkIndex(initAtk);
-        defValue = actorStatus.FinalDefIndex(initDef);
+        maxHp = actorStatus.FinalHpIndex();
+        atkIndex = actorStatus.FinalAtkIndex();
+        defValue = actorStatus.FinalDefIndex();
         networkMaxHp = maxHp;
         nowHp = networkMaxHp;
     }
@@ -211,7 +196,9 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
     #region Weapon
     [Header("Weapon")]
-    [SerializeField] protected Weapon mainWeapon;
+    public Weapon mainWeapon;
+    [SerializeField] protected Transform mainWeaponTransform;
+
     public virtual void UseMainWeapon()
     {
         if (mainWeapon != null) mainWeapon.OpenTheBox();
@@ -260,8 +247,6 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     #endregion
 
     #region ActionProcess
-    protected abstract float moveSpeed { get; }
-
     public virtual void Move(Vector3 moveDirection)
     {
         if (!Object.HasStateAuthority)return;
@@ -270,25 +255,13 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
         if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
 
-        characterController.Move(moveDirection * moveSpeed * Runner.DeltaTime);
+        characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
 
     }
     protected float turnSpeed = 180.0f;
-    protected virtual void Turn(Vector3 faceTo, bool isLookAt)
+    protected virtual void Turn(Vector3 direction)
     {
-        if (faceTo == Vector3.zero) return;
-
-        Vector3 direction = faceTo - transform.position;
-        // 上下方向には回転させない。
-        direction.y = 0f;
-        if (direction.sqrMagnitude <= 0.0001f) return;
-        if (isLookAt) transform.rotation = Quaternion.LookRotation(direction);
-        else
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(faceTo.normalized);
-
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Runner.DeltaTime);
-        }
+        transform.rotation = Quaternion.LookRotation(direction);
     }
 
     protected bool canDoNextCommand = true;

@@ -8064,6 +8064,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gamePlayer: {fileID: 1296735805}
+  allWeaponStatus:
+    sword_rare_01: {fileID: 11400000, guid: d7f0d94b10e60c041a409e558dfe9f68, type: 2}
+    sword_rare_02: {fileID: 11400000, guid: c0819ef1d1b55b2408d2b4de50c8aa0c, type: 2}
+    sword_rare_03: {fileID: 11400000, guid: 16928e884d6ddaa4ba86345e62792916, type: 2}
+    sword_rare_04: {fileID: 11400000, guid: 9ad91d1bf169c3145aff3a779c874eb5, type: 2}
+    sword_rare_05: {fileID: 11400000, guid: a5f980d1d25c1984c9811ac029e6200d, type: 2}
+    shield_rare_01: {fileID: 11400000, guid: d3287ee6e2378d94baeb99ae078b2917, type: 2}
+    shield_rare_02: {fileID: 11400000, guid: 1cf7a4b40b37c1947b278b21008829ff, type: 2}
+    shield_rare_03: {fileID: 11400000, guid: 4cc8d63218c22fe49ab4eb7522f2979f, type: 2}
+    shield_rare_04: {fileID: 11400000, guid: 13af68a2448e4a34ebf4da4efff9b5c0, type: 2}
+    shield_rare_05: {fileID: 11400000, guid: 33f8dd0ee1a31d549a4c3eb42f0dba77, type: 2}
 --- !u!4 &1795061386
 Transform:
   m_ObjectHideFlags: 0

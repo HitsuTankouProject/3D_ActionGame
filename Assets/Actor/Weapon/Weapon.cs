@@ -1,25 +1,20 @@
 ﻿using UnityEngine;
 
-public struct WeaponStatus
-{
-    public float atkBuffIndex;
-    public float defBuffIndex;
-    public WeaponStatus(float atk, float def)
-    {
-        atkBuffIndex = atk;
-        defBuffIndex = def;
-    }
-}
+
 public enum WeaponType { Sword, Shield, Staff, Knife, Greatsword }
 
 public abstract class Weapon : MonoBehaviour
 {
     public abstract WeaponType weaponType { get; }
     public Actor weaponUser;
-
+    public MeshRenderer weaponRenderer;
     public BoxCollider weaponCollider;
-    public abstract WeaponStatus weaponStatus {  get; }
-
+    public WeaponStatus weaponStatus;
+    public void WeaponInit(Actor master, WeaponStatus status)
+    {
+        weaponUser = master;
+        weaponStatus = status;
+    }
     public virtual void OpenTheBox() => weaponCollider.enabled = true;
 
     public virtual void CloseTheBox() => weaponCollider.enabled = false;

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: New Material 1
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 95aa9dd03a6060242bc52246cf36717f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17,8 +17,7 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -26,10 +25,14 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: c37f4e4a8cd8afc4ca6872288d770961, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Cubemap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -65,8 +68,36 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_238642087e3d4eaa8b2f6e9bb50b664b_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 8049ea91a9d5fca4dab4024c0915dbe6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_4709ba41cf364f48bb2306c550fe59da_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 29cf16dcfaae11f46bccf7ae069faa60, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_738514d9873648b2bd510364e61f69f4_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 7321981c4ba4964429cfcf9ff39c3b71, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _bladeTexture2D:
+        m_Texture: {fileID: 2800000, guid: 2b0c96194bde5894daac68b584fbed55, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _gripTexture2D:
+        m_Texture: {fileID: 2800000, guid: d5e1bc1e9834a8c43ac4340c040c57a7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _guardTexture2D:
+        m_Texture: {fileID: 2800000, guid: 58780efb29e14bd4d8015aa66cf60699, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _inlayTexture2D:
+        m_Texture: {fileID: 2800000, guid: d991ba51443f1ce4880788849e30dc44, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -101,12 +132,13 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _Metallic: 1
+    - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Smoothness: 0.49
+    - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -115,14 +147,30 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
+    - _bladeMetallic: 1
+    - _bladeSmoothness: 0.592
+    - _gripMetallic: 0.155
+    - _gripSmoothness: 0
+    - _guardMetallic: 1
+    - _guardSmoothness: 0.29
+    - _inlayMetallic: 0
+    - _inlaySmoothness: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _blade: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
+    - _bladeEmission: {r: 0.120074734, g: 0, b: 0, a: 1}
+    - _grip: {r: 0.7169812, g: 0.3033775, b: 0, a: 1}
+    - _gripEmission: {r: 0.00004957595, g: 0.00004957595, b: 0.00004957595, a: 1}
+    - _guard: {r: 1, g: 1, b: 1, a: 1}
+    - _guardEmission: {r: 0.05076577, g: 0.05076577, b: 0.05076577, a: 1}
+    - _inlay: {r: 0.8117647, g: 0.8117647, b: 0.8117647, a: 1}
+    - _inlayEmission: {r: 0.21960784, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &5324887644248637367
+--- !u!114 &5424947035717936801
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

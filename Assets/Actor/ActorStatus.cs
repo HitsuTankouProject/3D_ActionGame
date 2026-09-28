@@ -3,46 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public struct LevelScalePair
-{
-    /// <summary>倍率が設定される基準レベル。</summary>
-    public int level;
-    /// <summary>基準レベルにおけるステータス倍率。</summary>
-    public float scale;
-
-
-    /// <summary>
-    /// ステータス補正に使用する基準値を生成します。
-    /// </summary>
-    /// <param name="level">基準となるレベル。</param>
-    /// <param name="scale">基準レベルにおけるステータス倍率。</param>
-    public LevelScalePair(int level, float scale)
-    {
-        this.level = level;
-        this.scale = scale;
-    }
-    public static bool operator ==(LevelScalePair a, LevelScalePair b)
-        => a.level.Equals(b.level) && a.scale.Equals(b.scale);
-    public static bool operator !=(LevelScalePair a, LevelScalePair b)
-        => !a.level.Equals(b.level) || !a.scale.Equals(b.scale);
-
-    public static bool operator >(LevelScalePair a, LevelScalePair b)
-        => a.level > b.level && a.scale > b.scale;
-    public static bool operator <(LevelScalePair a, LevelScalePair b)
-        => a.level < b.level && a.scale < b.scale;
-
-    public override int GetHashCode() => HashCode.Combine(level, scale);
-    public override bool Equals(object obj)
-    {
-        if (obj is LevelScalePair other)
-        {
-            return Equals(level, other.level) && Equals(scale, other.scale);
-        }
-        return false;
-    }
-}
-[System.Serializable]
 public struct Status
 {
     public int Lv;
@@ -83,42 +43,20 @@ public struct Status
 public class ActorStatus
 {
     public Status status { get; private set; } = new();
-    public List<LevelScalePair> allLevelScalePairs { get; private set; } = new();
-
-    private bool IsAllLevelScalePairsPass()
+    public ActorBasicStatus actorBasicStatus;
+    private void OnValidate()
     {
-        allLevelScalePairs.Sort((firstPair, secondPair) => firstPair.level.CompareTo(secondPair.level));
-        LevelScalePair check = new LevelScalePair(int.MaxValue, float.PositiveInfinity);
-        for (int i = allLevelScalePairs.Count - 1; i >= 0; i--)
-        {
-            if (check < allLevelScalePairs[i])
-            {
-                Debug.LogError($"allLevelScalePairsの設定が不正です");
-                return false;
-            }
-            check = allLevelScalePairs[i];
-        }
-        return true;
-
-
-    }
-    private void SetAllLevelScalePairs(List<LevelScalePair> target)
-    {
-        allLevelScalePairs.Clear();
-
-        if (target == null) return;
-        allLevelScalePairs.Add(new(1, 1.0f));
-        allLevelScalePairs.AddRange(target);
-
-        if (!IsAllLevelScalePairsPass()) return;
+        if (actorBasicStatus == null) Debug.LogError("Actor Basic Status == null");
+     
     }
 
     private bool TryGetLevelScaleRange(int level, out LevelScalePair before, out LevelScalePair after)
     {
         before = default;
         after = default;
+        List<LevelScalePair> allLevelScalePairs = actorBasicStatus.allLevelScalePairs;
 
-        if (allLevelScalePairs == null || allLevelScalePairs.Count <=1)
+        if (allLevelScalePairs == null || allLevelScalePairs.Count <= 1)
         {
             Debug.LogError("LevelScalePair list is null or empty or Count less then 2.");
             return false;
@@ -158,22 +96,16 @@ public class ActorStatus
         return Mathf.RoundToInt(status_init * scale);
     }
 
-    public void StatusInit(Status targetStatus, List<LevelScalePair> levelScalePairs)
+    public int FinalHpIndex() => FinalStatus(actorBasicStatus.actorBasicHp, status.HpLv);
+    public int FinalAtkIndex() => FinalStatus(actorBasicStatus.actorBasicAtk, status.AtkLv);
+    public int FinalDefIndex() => FinalStatus(actorBasicStatus.actorBasicDef, status.DefLv);
+    //public int FinalPassiveIndex(int passive_init) => FinalStatus(passive_init, status.PassiveLv);
+    //public int FinalActiveIndex(int active_init) => FinalStatus(active_init, status.ActiveLv);
+    //public int FinalUltIndex(int ult_init) => FinalStatus(ult_init, status.UltLv);
+
+    public void StatusInit(Status targetStatus) => status = targetStatus;
+    public ActorStatus(Status targetStatus)
     {
-        status = targetStatus;
-        SetAllLevelScalePairs(levelScalePairs);
-    }
-
-    public int FinalHpIndex(int hp_init) => FinalStatus(hp_init, status.HpLv);
-    public int FinalAtkIndex(int atk_init) => FinalStatus(atk_init, status.AtkLv);
-    public int FinalDefIndex(int def_init) => FinalStatus(def_init, status.DefLv);
-    public int FinalPassiveIndex(int passive_init) => FinalStatus(passive_init, status.PassiveLv);
-    public int FinalActiveIndex(int active_init) => FinalStatus(active_init, status.ActiveLv);
-    public int FinalUltIndex(int ult_init) => FinalStatus(ult_init, status.UltLv);
-
-
-    public ActorStatus(Status targetStatus = default, List<LevelScalePair> levelScalePairs = default)
-    {
-        StatusInit(targetStatus, levelScalePairs);
+        StatusInit(targetStatus);
     }
 }

@@ -28,7 +28,7 @@ public abstract class Character : Actor, IColorDamageable
     [Header("Character Basic")]
     public MeshRenderer[] othersBodyMeshParts;
     public NetworkMecanimAnimator networkAnimator;
-    protected abstract CharacterType characterType { get; }
+    public abstract CharacterType characterType { get; }
 
     private int requiredMaterialCountPerLevel => (othersBodyMeshParts?.Length ?? 0) + 1;
 
@@ -53,7 +53,7 @@ public abstract class Character : Actor, IColorDamageable
             if (Vector3.Distance(monster.transform.position, transform.position) > trackDistance) continue;
 
             trackingActor = monster;
-            Turn(trackingMonsterPosition, true);
+            Turn(trackingMonsterPosition);
             //_inGame.playerCameraFollow.TurnCameraToCharacterBack();
 
             return true;
@@ -365,7 +365,7 @@ public abstract class Character : Actor, IColorDamageable
     {
         if (!IsAllowCommand()) return;
 
-        Turn(trackingMonsterPosition, true);
+        Turn(trackingMonsterPosition);
         RequestChangeStage(PlayerStage.Attack);
     }
     /// <summary>
@@ -375,7 +375,7 @@ public abstract class Character : Actor, IColorDamageable
     public virtual void PassiveSkill()
     {
         if (!IsAllowCommand()) return;
-        Turn(trackingMonsterPosition, true);
+        Turn(trackingMonsterPosition);
         RequestChangeStage(PlayerStage.PassiveSkill);
     }
 
@@ -400,7 +400,7 @@ public abstract class Character : Actor, IColorDamageable
         if (!TryReduceColor(activeSkillCost)) return;
 
         // 追跡中のモンスター、またはキャラクターの正面を向く。
-        Turn(trackingMonsterPosition, true);
+        Turn(trackingMonsterPosition);
         // アクティブスキルの状態へ変更し、アニメーションを再生する。
         RequestChangeStage(PlayerStage.ActiveSkill);
 
@@ -500,7 +500,25 @@ public abstract class Character : Actor, IColorDamageable
         if (needToChangeMaterial) ChangeMeshColor();
         return true;
     }
-
+    public virtual bool TryIncreaseColor(uint value)
+    {
+        if (colorSystem == null) return false;
+        // 減少後の色チャージ量と色喪失レベルを計算する。
+        bool canUse = colorSystem.CanColorCharge(ColorChargeType.Decrease, value, true, out int nextCharge, out int nextLostLevel);
+        // 必要な色チャージを消費できない場合は変更しない。
+        if (!canUse) return false;
+        bool needToChangeMaterial = colorSystem.lostColorLevel != nextLostLevel;
+        // 計算済みの色チャージ量と色喪失レベルを反映する。
+        colorSystem.ColorCharge(nextCharge, nextLostLevel);
+        // 自分が操作しているキャラクターの場合のみ、
+        // Canvas上の色チャージバーを更新する。
+        if (colorBar != null) colorBar.ChangeValueTo(+value).Forget();
+        // 色喪失レベルに応じてHPの回復可能上限を更新する。
+        RecoverMaxHpBarChange();
+        // 色喪失レベルが変化した場合のみ、マテリアルを変更する。
+        if (needToChangeMaterial) ChangeMeshColor();
+        return true;
+    }
 
     #endregion
 
@@ -508,7 +526,7 @@ public abstract class Character : Actor, IColorDamageable
     {
         if (!Object.HasStateAuthority) return;
 
-        actorStatus.StatusInit(status, allLevelScalePairs);
+        actorStatus.StatusInit(status);
 
         networkMaxHp = maxHp;
         nowHp = networkMaxHp;
@@ -551,7 +569,7 @@ public abstract class Character : Actor, IColorDamageable
         if (!Object.HasStateAuthority || _gameManager.nowGameScene != GameScene.InGame) return;
 
         Move(moveInput);
-        Turn(turnInput, false);
+        Turn(turnInput);
         if (trackingActor == null)
         {
             TryTrackActor(); 

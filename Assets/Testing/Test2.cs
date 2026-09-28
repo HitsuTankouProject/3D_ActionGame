@@ -6,6 +6,15 @@ using UnityEngine.InputSystem;
 
 public class Test2 : MonoBehaviour
 {
-    
+
+
+
+
+
+
+
+
+
+
 
 }

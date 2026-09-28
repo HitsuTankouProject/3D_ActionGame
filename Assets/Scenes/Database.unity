@@ -2320,8 +2320,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899227b741fcb554ca437a138b565762, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  networkManager: {fileID: 2145863767}
-  player: {fileID: 0}
+  gamePlayer: {fileID: 0}
+  allWeaponStatus:
+    sword_rare_01: {fileID: 0}
+    sword_rare_02: {fileID: 0}
+    sword_rare_03: {fileID: 0}
+    sword_rare_04: {fileID: 0}
+    sword_rare_05: {fileID: 0}
+    shield_rare_01: {fileID: 0}
+    shield_rare_02: {fileID: 0}
+    shield_rare_03: {fileID: 0}
+    shield_rare_04: {fileID: 0}
+    shield_rare_05: {fileID: 0}
 --- !u!4 &305155920
 Transform:
   m_ObjectHideFlags: 0
@@ -15447,10 +15457,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
   networkRunner: {fileID: 2145863766}
-  loginData:
-    user_id: 
-    security_code: 
-    access_code: 
+  networkSceneManager: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

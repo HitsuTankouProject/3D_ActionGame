@@ -691,13 +691,7 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
         var result = await RequestGetData(AllowedPurpose.Bag);
 
         if(!result.isSuccess) return null;
-        Debug.Log("RAW:");
-        Debug.Log(result.gotData);
-
         GetPlayerData<PlayerBag> resultData = JsonUtility.FromJson<GetPlayerData<PlayerBag>>(result.gotData);
-        
-        Debug.Log("DESERIALIZED:");
-        Debug.Log(JsonUtility.ToJson(resultData.get_data, true));
         if (!resultData.success) return null;
 
         return resultData.get_data;
@@ -708,7 +702,8 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
         var result = await RequestGetData(AllowedPurpose.Character);
         if (!result.isSuccess) return null;
         GetPlayerData<AllCharacterData> resultData = JsonUtility.FromJson<GetPlayerData<AllCharacterData>>(result.gotData);
-
+        Debug.Log(result.gotData);
+        Debug.Log(resultData);
         if (!resultData.success) return null;
 
         return resultData.get_data;

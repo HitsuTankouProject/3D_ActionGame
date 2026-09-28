@@ -48,16 +48,23 @@ public class InputManager : MonoBehaviour
     {
         if (_character == null || _mouse == null) return Vector3.zero;
 
-        Vector3 characterRight = _character.transform.right;
-        characterRight.y = 0.0f;
-        characterRight.Normalize();
+        //Vector3 characterRight = _character.transform.right;
 
-        float mouseDeltaX = _mouse.delta.ReadValue().x;
-        return characterRight * mouseDeltaX * mouseTurnSensitivity;
+        //characterRight.y = 0.0f;
+        //characterRight.Normalize();
+
+        //float mouseDeltaX = _mouse.delta.ReadValue().x;
+
+        //return characterRight * mouseDeltaX * mouseTurnSensitivity;
+
+        Vector2 mouseScreenPosition = Mouse.current.position.ReadValue() - new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Vector3 direction = new Vector3(mouseScreenPosition.x, 0, mouseScreenPosition.y);
+        return direction;
     }
 
     private void CharacterTurn()
     {
+
         Vector3 result = _character.transform.forward + ReadTurnInput();
         _character.SetTurnInput(result);
     }
@@ -97,6 +104,25 @@ public class InputManager : MonoBehaviour
 
 
     }
+
+    private void InGameInput()
+    {
+        if (_gameManager == null || _gameManager.nowGameScene != GameScene.InGame) return;
+        if (_keyboard == null || _character == null || _mouse == null) return;
+
+
+        CharacterTurn();
+
+        if (CharacterPassiveSkill() || CharacterAttack() || CharacterActiveSkill())
+        {
+            _character.SetMoveInput(Vector3.zero);
+            return;
+        }
+
+        CharacterMove();
+    }
+
+
 
     private void Update()
     {

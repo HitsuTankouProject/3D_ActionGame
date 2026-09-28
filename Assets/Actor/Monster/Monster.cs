@@ -23,7 +23,6 @@ public abstract class Monster : Actor
     public abstract MonsterType monsterType { get; }
     protected override float trackDistance { get; }
     protected abstract float attackDistance { get; }
-    protected override float moveSpeed { get; }
 
     [Header("Actor Status")]
     public int monsterLevel { get; private set; } = 10;
@@ -93,7 +92,7 @@ public abstract class Monster : Actor
     public override void ActorInit()
     {
         canBeTrack = true;
-        actorStatus.StatusInit(MonsterStatus(), allLevelScalePairs);
+        actorStatus.StatusInit(MonsterStatus());
     }
 
     [Header("Patrol")]
@@ -343,7 +342,7 @@ public abstract class Monster : Actor
             return;
         }
 
-        Turn(character.transform.position, true);
+        Turn(character.transform.position);
 
         if (currentAction != MonsterAction.Thinking)
         {
@@ -453,7 +452,7 @@ public abstract class Monster : Actor
         {
             if (character == null || character.Object == null) continue;
             if (character.Object.InputAuthority != trackingPlayer) continue;
-            if (!character.canBeTrack) continue;
+            if (!character.canBeTrack || character.stage == PlayerStage.Death) continue;
 
             trackingCharacter = character;
             return true;
@@ -516,12 +515,11 @@ public abstract class Monster : Actor
         float remainingDistance = moveDirection.magnitude;
 
         if (remainingDistance <= 0.0001f) return;
-
-        Turn(targetPosition, true);
+        Turn(targetPosition);
 
         SetNetworkActionIfChanged(MonsterAction.Run);
 
-        float movementDistance = Mathf.Min( moveSpeed * Runner.DeltaTime, remainingDistance);
+        float movementDistance = Mathf.Min(actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime, remainingDistance);
 
         Vector3 movement = moveDirection.normalized * movementDistance;
 

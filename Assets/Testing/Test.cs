@@ -1,45 +1,36 @@
-using Cysharp.Threading.Tasks;
-using UnityEngine;
+ï»¿using UnityEngine;
+using UnityEngine.InputSystem;
+using static Unity.Collections.Unicode;
 
 public class Test : MonoBehaviour
 {
-    private NetworkManager _networkManager => NetworkManager.Instance;
-
-    private void Start()
+     void Turn(Vector3 faceTo)
     {
-        _networkManager.TestNetworkConnection().Forget();
+        Vector3 direction = faceTo - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.0001f) return;
+
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
+
+    private void Update()
+    {
+        if (Mouse.current == null) return;
+
+        Vector2 mouseFromCenter = Mouse.current.position.ReadValue()
+            - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+
+        Vector3 targetPosition = transform.position
+            + new Vector3(mouseFromCenter.x, 0f, mouseFromCenter.y);
+
+        Turn(targetPosition);
     }
 
 
-    /// <summary>
-    /// UI‚ÌSingle Player Button‚©‚çŒÄ‚Ño‚·B
-    /// </summary>
-    public void StartSinglePlayer()
-    {
-        StartPlayerAsync(RoomMode.Single).Forget();
-    }
 
-    /// <summary>
-    /// UI‚ÌMultiplayer Button‚©‚çŒÄ‚Ño‚·B
-    /// </summary>
-    public void StartMultiplayer()
-    {
-        StartPlayerAsync(RoomMode.Multiplayer).Forget();
-    }
 
-    private async UniTask StartPlayerAsync(RoomMode roomMode)
-    {
-        if (_networkManager.networkMode != NetworkMode. Online)
-        {
-            Debug.LogError("Photon Lobby‚ÉÚ‘±‚µ‚Ä‚¢‚Ü‚¹‚ñB", this);
-            return;
-        }
 
-        bool result = await _networkManager.StartMatchmaking(roomMode);
-        Debug.Log(result ?
-            $"{roomMode.ToString()} Room‚Ö‚ÌQ‰Á‚É¬Œ÷‚µ‚Ü‚µ‚½B" :
-            $"{roomMode.ToString()} Room‚Ö‚ÌQ‰Á‚É¸”s‚µ‚Ü‚µ‚½B", this);
-    }
 
 
 }
