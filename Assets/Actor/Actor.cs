@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public enum ActorType { Character, Monster }
+
 
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(NetworkTransform))]
-
+/// <summary>
+/// HP・被ダメージ・武器・追跡・アニメーションの共通処理を提供するアクター基底クラス。
+/// </summary>
 public abstract class Actor : NetworkBehaviour, IDamageable
 {
     protected GameManager _gameManager => GameManager.Instance;
@@ -21,7 +23,6 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     public ActorStatus actorStatus;
 
     [SerializeField] protected Animator actorAnimator;
-    [SerializeField] protected CharacterController characterController;
 
 
     #region Status
@@ -72,7 +73,7 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     /// <summary>
     /// 現在の防御力倍率。
     /// </summary>
-    public float nowDefScale { get; private set; }
+    [Networked]  public float nowDefScale { get; private set; }
     /// <summary>
     /// 防御力倍率を指定された値へ変更します。
     /// </summary>
@@ -139,7 +140,6 @@ public abstract class Actor : NetworkBehaviour, IDamageable
 
     public void TakeDamage(int damage)
     {
-        Debug.Log(damage);
         if (damage <= 0) return;
 
         if (Object.HasStateAuthority)
@@ -156,7 +156,7 @@ public abstract class Actor : NetworkBehaviour, IDamageable
         if (!Object.HasStateAuthority || nowHp == 0) return;
 
         nowHp = Mathf.Max((nowHp - damage), 0);
-
+        Debug.Log(nowHp, this);
         if (nowHp == 0)
         {
             Death();
@@ -211,16 +211,20 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     #endregion
 
     #region Track
-
     [Networked] public NetworkBool canBeTrack { get; protected set; }
     public Actor trackingActor { get; protected set; } = null;
-    protected Vector3 trackingMonsterPosition => trackingActor == null ? transform.position + transform.forward : trackingActor.transform.position;
-
-    protected abstract float trackDistance {  get; }
+    protected Vector3 trackingActorPosition => trackingActor == null ? transform.position + transform.forward : trackingActor.transform.position;
+    protected float trackingActorDistance => trackingActor == null ? float.MaxValue : Vector3.Distance(transform.position, trackingActor.transform.position);
+    protected bool IsTrackingActorOutOfTrackDistance()
+    {
+        if (trackingActor == null) return true;
+        return trackingActorDistance > trackDistance;
+    }
+    protected abstract float trackDistance { get; }
     protected abstract bool TryTrackActor();
     protected virtual void StopTracking() => trackingActor = null;
 
-    protected virtual void UpdateTracking( float distanceError = 1.0f )
+    protected virtual void UpdateTracking()
     {
         if (trackingActor == null) return;
         if (!trackingActor.canBeTrack)
@@ -228,61 +232,48 @@ public abstract class Actor : NetworkBehaviour, IDamageable
             StopTracking();
             return;
         }
-
-        float distance = Vector3.Distance(transform.position, trackingActor.transform.position);
-
-        if(distance > (trackDistance * distanceError)) StopTracking();
+        if (IsTrackingActorOutOfTrackDistance()) StopTracking();
     }
-
-
-    //protected virtual void OnBecameVisible()
-    //{
-    //    canBeTrack = true;
-    //}
-    //protected virtual void OnBecameInvisible()
-    //{
-    //    canBeTrack = false;
-    //}
 
     #endregion
 
     #region ActionProcess
-    public virtual void Move(Vector3 moveDirection)
-    {
-        if (!Object.HasStateAuthority)return;
-
-        moveDirection.y = 0.0f;
-
-        if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
-
-        characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
-
-    }
+    public abstract void Move(Vector3 moveDirection);
     protected float turnSpeed = 180.0f;
-    protected virtual void Turn(Vector3 direction)
-    {
-        transform.rotation = Quaternion.LookRotation(direction);
-    }
+    protected virtual void Turn(Vector3 direction) => transform.rotation = Quaternion.LookRotation(direction);
 
     protected bool canDoNextCommand = true;
-    public virtual void CanDoNextCommand()
-    {
-        canDoNextCommand = true;
-    }
+    public virtual void CanDoNextCommand() => canDoNextCommand = true;
 
     #endregion
 
     #region Animation
 
     protected const string cancelTrigger = "Cancel";
+    protected readonly int cancelTriggerHash = Animator.StringToHash(cancelTrigger);
 
     protected const string runBool = "Run";
-    protected const string attack01Trigger = "Attack_01";
-    protected const string attack02Trigger = "Attack_02";
+    //protected const string attack01Trigger = "Attack_01";
+    //protected const string attack02Trigger = "Attack_02";
+    protected abstract int[] allNormalAttackHashes { get; }
+
     protected const string activeSkillTrigger = "ActiveSkill";
+    protected readonly int activeSkillTriggerHash = Animator.StringToHash(activeSkillTrigger);
 
     protected const string gotHitTrigger = "Hit";
     protected const string deathTrigger = "Death";
+
+    protected readonly int gotHitTriggerHash = Animator.StringToHash(gotHitTrigger);
+    protected readonly int deathTriggerHash = Animator.StringToHash(deathTrigger);
+
+
+
+    protected virtual void ReSetAllTheAttackTrigger()
+    {
+        if (actorAnimator == null) return;
+        foreach (var trigger in allNormalAttackHashes)
+            actorAnimator.ResetTrigger(trigger);
+    }
 
     #endregion
 

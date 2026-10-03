@@ -1,24 +1,37 @@
 ﻿using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
-public class Shield : Weapon
+public class Shield : Weapon, IDefend
 {
     public override WeaponType weaponType => WeaponType.Shield;
 
-    public override void DoDefend() 
+
+    public float GetDefendScale()
+    {
+        float defScale = 1 + (isFirstReaction ? weaponStatus.defBuffIndex : weaponStatus.defBuffIndex / 3);
+        return weaponUser.nowDefScale * defScale;
+    }
+
+    public void DoDefend()
     {
         OpenTheBox();
     }
 
-    public override void EndDefend()
+    public void EndDefend()
     {
         weaponUser.ReturnToMinDefScale();
         CloseTheBox();
     }
 
-    public override void WeaponReaction(Collider other) 
+    public override void WeaponReaction(Collider other)
     {
-        weaponUser.ChangeDefScale(weaponUser.nowDefScale * (1 + weaponStatus.defBuffIndex));
+        if (!other.gameObject.TryGetComponent<Weapon>(out Weapon attackingWeapon)
+            || attackingWeapon.weaponUser == weaponUser) return;
+
+        if (!attackingWeapon.TryGetComponent<IAttack>(out _)) return;
+
+        weaponUser.ChangeDefScale(GetDefendScale());
+        isFirstReaction = false;
     }
 
 }

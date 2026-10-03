@@ -172,7 +172,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -1660,7 +1660,6 @@ MonoBehaviour:
   actorStatus:
     actorBasicStatus: {fileID: 11400000, guid: 67b2ca6b7f608a54b8844436a65fde23, type: 2}
   actorAnimator: {fileID: 3714336361411374341}
-  characterController: {fileID: 2953463871808081414}
   maxHp: 0
   _nowHp: 0
   healthBar: {fileID: 183388505679992708}
@@ -1672,7 +1671,9 @@ MonoBehaviour:
   - {fileID: 714207853744783714}
   - {fileID: 1648752754976978998}
   networkAnimator: {fileID: 3952216982836474967}
+  characterController: {fileID: 2953463871808081414}
   stage: 0
+  attackReturnToFirstAttackTime: 0.5
   colorSystem: {fileID: 7832837941453269495}
   colorBar: {fileID: 0}
   leftHand: {fileID: 5111476340812336384}

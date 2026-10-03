@@ -1,36 +1,23 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
-using static Unity.Collections.Unicode;
+﻿using Cysharp.Threading.Tasks;
+using Fusion;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using TMPro;
+using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime;
+using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.TextCore.Text;
 
-public class Test : MonoBehaviour
+
+public class Test : MonoBehaviour, IDamageable
 {
-     void Turn(Vector3 faceTo)
+    
+    public void TakeDamage(int damage)
     {
-        Vector3 direction = faceTo - transform.position;
-        direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.0001f) return;
-
-        transform.rotation = Quaternion.LookRotation(direction);
+        Debug.Log($"TakeDamage called with damage: {damage}");
     }
-
-    private void Update()
-    {
-        if (Mouse.current == null) return;
-
-        Vector2 mouseFromCenter = Mouse.current.position.ReadValue()
-            - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-
-        Vector3 targetPosition = transform.position
-            + new Vector3(mouseFromCenter.x, 0f, mouseFromCenter.y);
-
-        Turn(targetPosition);
-    }
-
-
-
-
-
-
 
 }

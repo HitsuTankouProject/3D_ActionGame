@@ -22,9 +22,13 @@ public class Adventurer : Character
     }
 
     [Header("Adventurer Special")]
-    public Weapon leftHand;
+    public Shield leftHand;
     public Transform leftHandTransform;
 
+    protected override int[] allNormalAttackHashes { get; } =
+    {
+        Animator.StringToHash("Attack_01"), Animator.StringToHash("Attack_02"),
+    };
     public override void PassiveSkill()
     {
         if (stage == PlayerStage.Death) return;

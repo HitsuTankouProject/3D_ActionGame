@@ -304,17 +304,12 @@ public class Lobby : MonoBehaviour
 
     private async UniTask StartPlayerAsync(RoomMode roomMode)
     {
-        if (_networkManager.networkMode != NetworkMode.Online)
-        {
-            Debug.LogError("Photon Lobbyに接続していません。", this);
-            return;
-        }
-
         bool result = await _networkManager.StartMatchmaking(roomMode);
         Debug.Log(result ?
             $"{roomMode.ToString()} Roomへの参加に成功しました。" :
             $"{roomMode.ToString()} Roomへの参加に失敗しました。", this);
     }
+
     public void MoveToGameTitle()
     {
         _networkManager.TryGoGameTitle();

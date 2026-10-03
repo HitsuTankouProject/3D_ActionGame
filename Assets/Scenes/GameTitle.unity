@@ -742,7 +742,7 @@ MonoBehaviour:
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
-  m_FillOrigin: 1
+  m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!222 &111286428
@@ -2244,8 +2244,6 @@ GameObject:
   m_Component:
   - component: {fileID: 550340515}
   - component: {fileID: 550340514}
-  - component: {fileID: 550340513}
-  - component: {fileID: 550340516}
   m_Layer: 0
   m_Name: Network
   m_TagString: Untagged
@@ -2253,18 +2251,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &550340513
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 550340512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkRunner
 --- !u!114 &550340514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2277,8 +2263,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 890ea80934c1a724fa243cb3c908ab0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
-  networkRunner: {fileID: 550340513}
-  networkSceneManager: {fileID: 550340516}
+  runnerPrefab: {fileID: -5172413809394629617, guid: ef942dbbde1173645bdbbb8d0a37c8c1, type: 3}
 --- !u!4 &550340515
 Transform:
   m_ObjectHideFlags: 0
@@ -2294,20 +2279,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1795061386}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &550340516
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 550340512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90a93abf1a391964a94e5c139605105b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fusion.Unity::Fusion.NetworkSceneManagerDefault
-  IsSceneTakeOverEnabled: 1
-  LogSceneLoadErrors: 1
 --- !u!1 &566842325
 GameObject:
   m_ObjectHideFlags: 0
@@ -4968,6 +4939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9c5c91c846389a428c96a7ae5606f89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  choseCharacter: 1
   inGameBag:
     items: []
   controlling_Character: {fileID: 0}

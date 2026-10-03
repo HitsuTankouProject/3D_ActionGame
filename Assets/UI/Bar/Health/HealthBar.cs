@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -97,13 +97,6 @@ public class HealthBar : Bar
         else if (usingDisPlay == UsingDisPlay.SpriteRenderer) sr_Back.size = new Vector2(targetValue, sr_Front.size.y);
 
     }
-    //private void Update()
-    //{
-    //    if (test)
-    //    {
-    //        ChangeValueTo(health).Forget();
-    //        test = false;
-    //    }
-    //}
+
 
 }

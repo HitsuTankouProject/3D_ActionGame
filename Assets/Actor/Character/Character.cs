@@ -28,6 +28,8 @@ public abstract class Character : Actor, IColorDamageable
     [Header("Character Basic")]
     public MeshRenderer[] othersBodyMeshParts;
     public NetworkMecanimAnimator networkAnimator;
+    [SerializeField] protected CharacterController characterController;
+
     public abstract CharacterType characterType { get; }
 
     private int requiredMaterialCountPerLevel => (othersBodyMeshParts?.Length ?? 0) + 1;
@@ -53,7 +55,7 @@ public abstract class Character : Actor, IColorDamageable
             if (Vector3.Distance(monster.transform.position, transform.position) > trackDistance) continue;
 
             trackingActor = monster;
-            Turn(trackingMonsterPosition);
+            Turn(trackingActorPosition);
             //_inGame.playerCameraFollow.TurnCameraToCharacterBack();
 
             return true;
@@ -61,20 +63,6 @@ public abstract class Character : Actor, IColorDamageable
         }
 
         return false;
-
-    }
-    protected override void UpdateTracking(float distanceError = 1.0f)
-    {
-        if (trackingActor == null) return;
-        if (!trackingActor.canBeTrack)
-        {
-            StopTracking();
-            return;
-        }
-
-        float distance = Vector3.Distance(transform.position, trackingActor.transform.position);
-
-        if (distance > (trackDistance * distanceError)) StopTracking();
 
     }
 
@@ -137,21 +125,14 @@ public abstract class Character : Actor, IColorDamageable
     #region Animation
     // Animator に設定されているパラメーター名。
     private const string passiveSkillTrigger = "PassiveSkill";
-    private const string ultSkillTrigger = "UltSkill";
-
-    private static readonly int cancelTriggerHash = Animator.StringToHash(cancelTrigger);
-    private static readonly int attack01TriggerHash = Animator.StringToHash(attack01Trigger);
-    private static readonly int attack02TriggerHash = Animator.StringToHash(attack02Trigger);
     private static readonly int passiveSkillTriggerHash = Animator.StringToHash(passiveSkillTrigger);
-    private static readonly int activeSkillTriggerHash = Animator.StringToHash(activeSkillTrigger);
+
+    private const string ultSkillTrigger = "UltSkill";
     private static readonly int ultSkillTriggerHash = Animator.StringToHash(ultSkillTrigger);
-    private static readonly int gotHitTriggerHash = Animator.StringToHash(gotHitTrigger);
-    private static readonly int deathTriggerHash = Animator.StringToHash(deathTrigger);
 
+    //private static readonly int attack01TriggerHash = Animator.StringToHash(attack01Trigger);
+    //private static readonly int attack02TriggerHash = Animator.StringToHash(attack02Trigger);
 
-
-    // 2種類の通常攻撃を交互に使用するためのフラグ。
-    private bool useFirstAttack = true;
 
     /// <summary>
     /// 通过 NetworkMecanimAnimator 播放 Trigger。
@@ -170,24 +151,34 @@ public abstract class Character : Actor, IColorDamageable
     }
 
 
+    #region Attack
+    [Header("Attack")]
+    [SerializeField] private float attackReturnToFirstAttackTime = 0.5f;
+    private int currentAttackIndex = 0;
+    [Networked] private TickTimer normalAttackReturnTimer { get; set; }
+    
+    private bool IsNormalAttackReturnTimerCounting() 
+        => normalAttackReturnTimer.IsRunning && !normalAttackReturnTimer.Expired(Runner);
+    private void SetAttackReturnTimer() 
+        => normalAttackReturnTimer = TickTimer.CreateFromSeconds(Runner, attackReturnToFirstAttackTime);
+
+    #endregion
+
     /// <summary>
     /// 2種類の通常攻撃アニメーションを交互に再生します。
     /// 攻撃のパタン
     /// </summary>
-    protected void Animation_Attack()
+    protected virtual void Animation_Attack()
     {
         if (!Object.HasStateAuthority) return;
+        if (allNormalAttackHashes.Length == 0) return;
 
-        int attackTriggerHash = useFirstAttack ? attack01TriggerHash : attack02TriggerHash;
-
+        if (!IsNormalAttackReturnTimerCounting()) currentAttackIndex = 0;
         // 前回設定された攻撃トリガーを解除する。
-        actorAnimator.ResetTrigger(attack01TriggerHash);
-        actorAnimator.ResetTrigger(attack02TriggerHash);
-
-        SetNetworkTrigger(attackTriggerHash);
-
-        // 次回は別の攻撃アニメーションを使用する。
-        useFirstAttack = !useFirstAttack;
+        ReSetAllTheAttackTrigger();
+        SetNetworkTrigger(allNormalAttackHashes[currentAttackIndex]);
+        currentAttackIndex = (currentAttackIndex + 1) % allNormalAttackHashes.Length;
+        SetAttackReturnTimer();
     }
 
 
@@ -257,6 +248,7 @@ public abstract class Character : Actor, IColorDamageable
         PlayAnimation(playerStage);
         WaitTheNextAction();
     }
+
     /// <summary>
     /// キャラクターを待機状態へ変更し、
     /// 現在設定されているアニメーションパラメーターを解除します。
@@ -271,8 +263,10 @@ public abstract class Character : Actor, IColorDamageable
         actorAnimator.SetBool(runBool, false);
 
         // 実行中または予約されているアニメーショントリガーを解除する。
-        actorAnimator.ResetTrigger(attack01TriggerHash);
-        actorAnimator.ResetTrigger(attack02TriggerHash);
+        //actorAnimator.ResetTrigger(attack01TriggerHash);
+        //actorAnimator.ResetTrigger(attack02TriggerHash);
+
+        ReSetAllTheAttackTrigger();
         actorAnimator.ResetTrigger(passiveSkillTriggerHash);
         actorAnimator.ResetTrigger(activeSkillTriggerHash);
         actorAnimator.ResetTrigger(ultSkillTriggerHash);
@@ -280,7 +274,6 @@ public abstract class Character : Actor, IColorDamageable
     }
 
     #endregion
-
 
     #region HP
 
@@ -365,7 +358,7 @@ public abstract class Character : Actor, IColorDamageable
     {
         if (!IsAllowCommand()) return;
 
-        Turn(trackingMonsterPosition);
+        Turn(trackingActorPosition);
         RequestChangeStage(PlayerStage.Attack);
     }
     /// <summary>
@@ -375,7 +368,7 @@ public abstract class Character : Actor, IColorDamageable
     public virtual void PassiveSkill()
     {
         if (!IsAllowCommand()) return;
-        Turn(trackingMonsterPosition);
+        Turn(trackingActorPosition);
         RequestChangeStage(PlayerStage.PassiveSkill);
     }
 
@@ -400,7 +393,7 @@ public abstract class Character : Actor, IColorDamageable
         if (!TryReduceColor(activeSkillCost)) return;
 
         // 追跡中のモンスター、またはキャラクターの正面を向く。
-        Turn(trackingMonsterPosition);
+        Turn(trackingActorPosition);
         // アクティブスキルの状態へ変更し、アニメーションを再生する。
         RequestChangeStage(PlayerStage.ActiveSkill);
 
@@ -422,19 +415,33 @@ public abstract class Character : Actor, IColorDamageable
 
     }
 
+    protected override void Turn(Vector3 faceTo)
+    {
+        faceTo.y = 0f;
+        if (faceTo.sqrMagnitude < 0.0001f) return;
+
+        base.Turn(faceTo);
+    }
+
     public override void Move(Vector3 moveDirection)
     {
-        if(moveDirection == Vector3.zero)
+        if (!Object.HasStateAuthority) return;
+
+        if (moveDirection == Vector3.zero)
         {
             actorAnimator.SetBool(runBool, false);
+
             CanDoNextCommand();
             return;
         }
 
         if (canDoNextCommand) RequestChangeStage(PlayerStage.Run);
-        //Turn(moveDirection, true);
-        base.Move(moveDirection);
 
+        moveDirection.y = 0.0f;
+
+        if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
+
+        characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
     }
 
     #endregion
@@ -555,6 +562,7 @@ public abstract class Character : Actor, IColorDamageable
         ActorInit();
         if (!Object.HasStateAuthority) return;
         AllStatusInit();
+
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
@@ -566,7 +574,7 @@ public abstract class Character : Actor, IColorDamageable
 
     public override void FixedUpdateNetwork()
     {
-        if (!Object.HasStateAuthority || _gameManager.nowGameScene != GameScene.InGame) return;
+        if (!Object.HasStateAuthority || !_inGame.IsGamePlaying()) return;
 
         Move(moveInput);
         Turn(turnInput);
@@ -576,7 +584,7 @@ public abstract class Character : Actor, IColorDamageable
         }
         else
         {
-            UpdateTracking(1.1f);
+            UpdateTracking();
         }
 
     }

@@ -356,10 +356,13 @@ PrefabInstance:
       addedObject: {fileID: 6596865486605888048}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa901269924e38f44a2e4af04e8845a8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5094750855729261474}
+      addedObject: {fileID: 5917628473253871959}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa901269924e38f44a2e4af04e8845a8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 477508926600112427}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa901269924e38f44a2e4af04e8845a8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6876907304937480439}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa901269924e38f44a2e4af04e8845a8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4042758526449515623}
@@ -396,7 +399,6 @@ MonoBehaviour:
   actorStatus:
     actorBasicStatus: {fileID: 11400000, guid: 2afcb8484a3cbd445b7de0cf5a9278bf, type: 2}
   actorAnimator: {fileID: 477508926600112427}
-  characterController: {fileID: 5094750855729261474}
   maxHp: 0
   _nowHp: 0
   healthBar: {fileID: 7787287633229511653}
@@ -404,39 +406,26 @@ MonoBehaviour:
   mainWeaponTransform: {fileID: 2855937581098603074}
   _canBeTrack:
     RawValue: 0
-  monsterAnimator: {fileID: 477508926600112427}
-  patrolLocations: []
-  targetPatrolLocation: {x: 0, y: 0, z: 0}
-  idleDecisionSeconds: 0.1
-  actionThinkingSeconds: 0.5
-  closestPatrolLocation: {x: 0, y: 0, z: 0}
   _stage: 0
+  _currentAction: 0
+  monsterActionDuration: {fileID: 11400000, guid: f8f91bdbdf9fa3e47a3105a185252e24, type: 2}
+  patrolPath: {fileID: 5917628473253871959}
+  navMeshAgent: {fileID: 6876907304937480439}
+  allNormalAttackWeights: 0
   subWeapon: {fileID: 7437857839131657207}
---- !u!143 &5094750855729261474
-CharacterController:
+--- !u!114 &5917628473253871959
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 891391328092209299}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 0.82
-  m_Radius: 0.22
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.45, z: 0}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8094a00aa56bb2148ae732a2412b7aa3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatrolPath
+  patrolPoints: []
 --- !u!95 &477508926600112427
 Animator:
   serializedVersion: 7
@@ -459,6 +448,28 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!195 &6876907304937480439
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891391328092209299}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!114 &4042758526449515623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -550,7 +561,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2

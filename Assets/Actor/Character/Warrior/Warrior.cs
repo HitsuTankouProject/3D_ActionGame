@@ -8,5 +8,8 @@ public class Warrior : Character
 
     public override uint activeSkillCost => 40;
 
-
+    protected override int[] allNormalAttackHashes { get; } =
+{
+        Animator.StringToHash("Attack_01"), Animator.StringToHash("Attack_02"),
+    };
 }

@@ -9,6 +9,8 @@ using static Fusion.Sockets.NetBitBuffer;
 public class InGame : MonoBehaviour
 {
     public static InGame Instance {  get; private set; }
+    private const GameScene sceneName = GameScene.InGame;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -21,6 +23,14 @@ public class InGame : MonoBehaviour
 
     private NetworkManager _networkManager => NetworkManager.Instance;
     private NetworkRunner _networkRunner => _networkManager.runner;
+
+    private enum InGameStage { Init, Playing, End}
+    [Header("InGame Stage")]
+    [SerializeField] private InGameStage gameStage = InGameStage.Init;
+    public bool IsGamePlaying() => gameStage == InGameStage.Playing;
+
+
+    #region Actor
 
     [Header("Player UseCanvas Part")]
     public HealthBar canvasHealthBar;
@@ -48,24 +58,6 @@ public class InGame : MonoBehaviour
     {
         if (character == null || !allPlayerCharacters.Remove(character)) return;
     }
-
-    public List<Monster> allMonsters { get; private set; } = new();
-
-    public void RegisterMonster(Monster monster)
-    {
-        if (monster == null || allMonsters.Contains(monster)) return;
-        allMonsters.Add(monster);
-
-    }
-    public void UnregisterMonster(Monster monster)
-    {
-        if (monster == null || !allMonsters.Remove(monster)) return;
-    }
-
-
-    public float commandTime => GameManager.commandFps * Time.deltaTime;
-
-    private const GameScene sceneName = GameScene.InGame;
 
     [Header("Character Prefab")]
     [SerializeField] private NetworkPrefabRef adventurerPrefab;
@@ -186,8 +178,41 @@ public class InGame : MonoBehaviour
             playerObject);
     }
 
+
+    public List<Monster> allMonsters { get; private set; } = new();
+    public void RegisterMonster(Monster monster)
+    {
+        if (monster == null || allMonsters.Contains(monster)) return;
+        allMonsters.Add(monster);
+
+    }
+    public void UnregisterMonster(Monster monster)
+    {
+        if (monster == null || !allMonsters.Remove(monster)) return;
+    }
+
+    public void UpdateCharacterAndMonsterList()
+    {
+        allMonsters.RemoveAll(character => character == null);
+
+        allPlayerCharacters.RemoveAll(character => character == null);
+
+        if (allPlayerCharacters.Count <= 0)
+        {
+            Debug.LogError("[InGame] There have no any Characters here");
+        }
+    }
+
+    #endregion
+
+    public float commandTime => GameManager.commandFps * Time.deltaTime;
+
+
+
+
     private async UniTask InitializeGameScene()
     {
+        gameStage = InGameStage.Init;
         if (_gameManager == null)
         {
             Debug.LogError("_gameManager == null");
@@ -216,77 +241,18 @@ public class InGame : MonoBehaviour
         }
 
         SpawnLocalPlayer();
-        SpawnMonster();
+        gameStage = InGameStage.Playing;
+
     }
 
-    [Header("Monster Prefab")]
-    [SerializeField] private NetworkPrefabRef dullahanPrefab;
-    [SerializeField] private Transform monsterSpawnPoint;
-    private int monsterLevel
+    private async UniTask EndGameProcess()
     {
-        get
-        {
-            return _player?.controlling_Character == null ? 25 : _player.controlling_Character.actorStatus.status.Lv + 5;
-        }
+        UpdateCharacterAndMonsterList();
+        foreach (Character character in allPlayerCharacters) character.ReturnIdle();
     }
-    private readonly List<NetworkObject> spawnedMonsterObjects = new();
-
-    private void SpawnMonster()
-    {
-        if (!_networkRunner.IsRunning)
-        {
-            Debug.LogError("NetworkRunner is not running.", this);
-
-            return;
-        }
-
-        if (!_networkRunner.IsSceneAuthority) return;
-
-        if (!dullahanPrefab.IsValid)
-        {
-            Debug.LogError("Monster Prefab is not assigned.", this);
-            return;
-        }
-
-        Vector3 spawnPosition = monsterSpawnPoint != null ? monsterSpawnPoint.position : Vector3.zero;
-
-        Quaternion spawnRotation = monsterSpawnPoint != null ? monsterSpawnPoint.rotation : Quaternion.identity;
-
-        NetworkObject monsterObject = _networkRunner.Spawn(
-                dullahanPrefab,
-                spawnPosition,
-                spawnRotation,
-                inputAuthority: null,
-                onBeforeSpawned:
-                    (runner, networkObject) =>
-                    {
-                        if (!networkObject.TryGetComponent(out Monster monster))
-                        {
-                            Debug.LogError("Monster component was not found.", networkObject);
-
-                            return;
-                        }
-                        monster.SetMonsterLevel(monsterLevel);
 
 
-                    });
-        if (monsterObject == null)
-        {
-            Debug.LogError("Failed to spawn Monster Object.", this);
 
-            return;
-        }
-
-        spawnedMonsterObjects.Add(
-            monsterObject);
-
-        Debug.Log(
-            $"Monsterを生成しました。\n" +
-            $"Position：{spawnPosition}\n" +
-            $"Monster Count：" +
-            $"{spawnedMonsterObjects.Count}",
-            monsterObject);
-    }
 
 
     private void Start()
@@ -296,9 +262,10 @@ public class InGame : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (gameStage != InGameStage.Playing) return;
         if (_gameManager == null || _controlling_Character == null) return;
         MiniMapCameraUpdate();
-
+        UpdateCharacterAndMonsterList();
     }
 
 

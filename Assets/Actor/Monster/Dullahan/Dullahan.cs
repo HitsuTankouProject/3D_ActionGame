@@ -8,7 +8,24 @@ public class Dullahan : Monster
     [SerializeField] private Weapon subWeapon;
     public override MonsterType monsterType => MonsterType.Dullahan;
     protected override float trackDistance => 6.0f;
-    protected override float attackDistance => 1.25f;
+
+    protected override int[] allNormalAttackHashes { get; } =
+    {
+        Animator.StringToHash("Attack_01"), Animator.StringToHash("Attack_02"),
+    };
+
+    protected override void AttackAction()
+    {
+        Turn(trackingActor.transform.position);
+        if (TryUseSkill())
+        {
+            SetNetworkAction(MonsterAction.Skill);
+            return;
+        }
+        else NormalAttack();
+
+    }
+
 
     public virtual void UseSubWeapon()
     {

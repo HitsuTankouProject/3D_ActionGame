@@ -34,9 +34,9 @@ public class InputManager : MonoBehaviour
         Vector3 inputDirection = Vector3.zero;
 
         if (_keyboard.wKey.isPressed) inputDirection += characterForward;
-        if (_keyboard.sKey.isPressed) inputDirection -= characterForward;
-        if (_keyboard.aKey.isPressed) inputDirection -= characterRight;
-        if (_keyboard.dKey.isPressed) inputDirection += characterRight;
+        //if (_keyboard.sKey.isPressed) inputDirection -= characterForward;
+        //if (_keyboard.aKey.isPressed) inputDirection -= characterRight;
+        //if (_keyboard.dKey.isPressed) inputDirection += characterRight;
 
         return inputDirection.normalized;
 
@@ -112,31 +112,31 @@ public class InputManager : MonoBehaviour
 
 
         CharacterTurn();
-
-        if (CharacterPassiveSkill() || CharacterAttack() || CharacterActiveSkill())
+        if (CharacterPassiveSkill())
         {
             _character.SetMoveInput(Vector3.zero);
             return;
         }
-
-        CharacterMove();
+        else if (CharacterAttack())
+        {
+            _character.SetMoveInput(Vector3.zero);
+            return;
+        }
+        else if (CharacterActiveSkill())
+        {
+            _character.SetMoveInput(Vector3.zero);
+            return;
+        }
+        else CharacterMove();
     }
 
 
 
     private void Update()
     {
-        if (_keyboard == null || _character == null || _mouse == null) return;
-        CharacterTurn();
+        InGameInput();
 
-        if (CharacterPassiveSkill() || CharacterAttack() || CharacterActiveSkill())
-        {
-            _character.SetMoveInput(Vector3.zero);
-            return;
-        }
 
-        CharacterMove();
-        
     }
 
 

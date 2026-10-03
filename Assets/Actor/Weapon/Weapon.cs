@@ -1,5 +1,15 @@
 ﻿using UnityEngine;
 
+public interface IDefend
+{
+    float GetDefendScale();
+    void DoDefend();
+    void EndDefend();
+}
+public interface IAttack
+{
+    public int DoDamage();
+}
 
 public enum WeaponType { Sword, Shield, Staff, Knife, Greatsword }
 
@@ -15,15 +25,19 @@ public abstract class Weapon : MonoBehaviour
         weaponUser = master;
         weaponStatus = status;
     }
-    public virtual void OpenTheBox() => weaponCollider.enabled = true;
 
-    public virtual void CloseTheBox() => weaponCollider.enabled = false;
+    protected bool isFirstReaction = true;
+    public virtual void OpenTheBox()
+    {
+        isFirstReaction = true;
+        weaponCollider.enabled = true;
+    }
 
-    public int DoDamage() => Mathf.FloorToInt(weaponUser != null ? weaponUser.atkIndex : 0 * weaponStatus.atkBuffIndex);
-
-    public virtual void DoDefend() { }
-    public virtual void EndDefend() { }
-
+    public virtual void CloseTheBox()
+    {
+        isFirstReaction = true;
+        weaponCollider.enabled = false;
+    }
 
     public abstract void WeaponReaction(Collider other);
 
