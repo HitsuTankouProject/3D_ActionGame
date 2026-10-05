@@ -55,8 +55,8 @@ public class Lobby : MonoBehaviour
         warriorModel.gameObject.SetActive(nowShowingCharacterType == CharacterType.Warrior);
     }
 
-    public MeshRenderer rightWeapon => characterModel.mainWeapon.weaponRenderer;
-    public MeshRenderer leftWeapon
+    public MeshRenderer mainWeapon => characterModel.mainWeapon.weaponRenderer;
+    public MeshRenderer supWeapon
     {
         get
         {
@@ -323,13 +323,14 @@ public class Lobby : MonoBehaviour
         {
             mainWeaponStatus = weaponStatus;
             nowShowingWeaponMeshRender.material = mainWeaponStatus.weaponMaterial;
-
+            mainWeapon.material = mainWeaponStatus.weaponMaterial;
             return;
         }
         else if (nowPickingWeaponType[nowShowingWeaponType] == NowPickingWeapon.Sup)
         {
             supWeaponStatus = weaponStatus;
             nowShowingWeaponMeshRender.material = supWeaponStatus.weaponMaterial;
+            supWeapon.material = supWeaponStatus.weaponMaterial;
 
             return;
         }
@@ -456,7 +457,8 @@ public class Lobby : MonoBehaviour
 
         SetUpAllCharacterStatus();
         PickAdventurer();
-        OpenCharacterStatusObject();
+        cameraAnimator.ResetTrigger(turnReturnTigger);
+
     }
 
 

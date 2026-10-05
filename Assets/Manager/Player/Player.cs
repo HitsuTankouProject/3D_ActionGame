@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
             items = new PlayerItem[]
             {
                 new PlayerItem("Sword_1_1", 1),new PlayerItem("Sword_2_1", 1),new PlayerItem("Sword_3_1", 1),new PlayerItem("Sword_4_1", 1),new PlayerItem("Sword_5_1", 1),
-                new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1)
+                new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_2_1", 1),new PlayerItem("Shield_3_1", 1),new PlayerItem("Shield_4_1", 1),new PlayerItem("Shield_5_1", 1)
             }
         };
     }
