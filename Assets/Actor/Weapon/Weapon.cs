@@ -11,7 +11,7 @@ public interface IAttack
     public int DoDamage();
 }
 
-public enum WeaponType { Sword, Shield, Staff, Knife, Greatsword }
+public enum WeaponType { None, Sword, Shield, Staff, Knife, Greatsword }
 
 public abstract class Weapon : MonoBehaviour
 {

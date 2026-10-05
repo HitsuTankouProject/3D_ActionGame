@@ -124,7 +124,7 @@ public class GameTitle : MonoBehaviour
         if (success)
         {
             MessageBoxOn("　アカウントログアウト成功　", Color.black, 0.5f).Forget();
-            _player.ResetAllCharacterData();
+            _player.ResetAllPlayerData();
         }
         else MessageBoxOn("　アカウントログアウト失敗　", Color.red, 0.5f).Forget();
 

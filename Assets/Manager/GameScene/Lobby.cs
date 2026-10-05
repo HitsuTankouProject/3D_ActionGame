@@ -1,12 +1,41 @@
 ﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
+using UnityEngine.Events;
 using UnityEngine.UI;
+using static UnityEditor.SceneView;
+
+public struct PlayerPickWeapon
+{
+    public WeaponStatus mainWeaponStatus;
+    public WeaponStatus supWeaponStatus;
+
+    public PlayerPickWeapon(WeaponStatus mainWeapon, WeaponStatus supWeapon = null)
+    {
+        mainWeaponStatus = mainWeapon;
+        supWeaponStatus = supWeapon;
+    }
+
+
+}
 
 public class Lobby : MonoBehaviour
 {
+    public static Lobby Instance { get; private set; }
+    private void Awake()
+    {
+        if(Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     private const GameScene sceneName = GameScene.Lobby;
     private NetworkManager _networkManager => NetworkManager.Instance;
     private GameManager _gameManager => GameManager.Instance;
@@ -36,7 +65,6 @@ public class Lobby : MonoBehaviour
             return adventurer.leftHand.weaponRenderer;
         }
     }
-
 
     #region Status
 
@@ -113,123 +141,244 @@ public class Lobby : MonoBehaviour
 
     #endregion
 
-    #region Bag
-    [Header("Bag")]
-    [SerializeField] private GameObject bagObject;
-
-
-    [SerializeField] private Button mainWeaponButton;
-    [SerializeField] private Button supWeaponButton;
-    private void CloseAllWeaponButtons()
+    #region WeaponPick
+    [Header("WeaponPick")]
+    [SerializeField] private GameObject weaponPickObject;
+    [System.Serializable] private struct WeaponCanPickData
     {
-        mainWeaponButton.gameObject.SetActive(false);
-        supWeaponButton.gameObject.SetActive(false);
+        public MeshRenderer weaponMeshRenderer;
+        public GameObject weaponObject => weaponMeshRenderer.gameObject;
+        public Sprite weaponBagIcon;
     }
-
-    [SerializeField] private Button[] weaponButtons;
-    private void ChangeWeaponMaterial(Material weaponMaterial)
+    private enum NowPickingWeapon { Main, Sup }
+    private readonly Dictionary<WeaponType, NowPickingWeapon> nowPickingWeaponType = new()
     {
-        nowShowingWeaponMeshRender.material = weaponMaterial;
-    }
-    private void ChangeWeaponButtons(List<WeaponStatus> weaponStatuses)
-    {
-        if (weaponStatuses.Count != weaponButtons.Length)
-        {
-            Debug.LogError("weaponStatuses.Count != weaponButtons.Length");
-            return;
-        }
-
-        for (int i = 0; i < weaponStatuses.Count; i++)
-        {
-            int index = i;
-            weaponButtons[index].image.sprite = weaponStatuses[index].weaponIcon;
-            weaponButtons[index].onClick.AddListener(() => ChangeWeaponMaterial(weaponStatuses[index].weaponMaterial));
-        }
-
-    }
-
-
+        { WeaponType.Sword ,NowPickingWeapon.Main},
+        { WeaponType.Shield ,NowPickingWeapon.Sup},
+        { WeaponType.Staff ,NowPickingWeapon.Main},
+        { WeaponType.Knife ,NowPickingWeapon.Main},
+        { WeaponType.Greatsword ,NowPickingWeapon.Main},
+    };
     [Header("Camera")]
     [SerializeField] private Animator cameraAnimator;
     private const string turnRightTigger = "TurnRight";
     private const string turnLeftTigger = "TurnLeft";
     private const string turnReturnTigger = "Return";
-    private enum CameraShow { Left, Right };
-    private void CameraMove(CameraShow cameraShow)
-        => cameraAnimator.SetTrigger(cameraShow == CameraShow.Right ? turnRightTigger : turnLeftTigger);
-    private void CameraReturn() => cameraAnimator.SetTrigger(turnReturnTigger);
 
-    [Header("Sword Icon")]
-    [SerializeField] private MeshRenderer sword;
-    private GameObject swordObject => sword.gameObject;
-    [SerializeField] private Sprite swordBagIcon;
+    private void CameraMove(WeaponType weapon)
+    {
+        if (!nowPickingWeaponType.ContainsKey(weapon))
+        {
+            cameraAnimator.ResetTrigger(turnRightTigger);
+            cameraAnimator.ResetTrigger(turnLeftTigger);
+            cameraAnimator.SetTrigger(turnReturnTigger);
+        }
 
-    [Header("Shield Icon")]
-    [SerializeField] private MeshRenderer shield;
-    private GameObject shieldObject => shield.gameObject;
-    [SerializeField] private Sprite shieldBagIcon;
+        else
+            cameraAnimator.SetTrigger(
+                nowPickingWeaponType[weapon] == NowPickingWeapon.Main ? 
+                turnLeftTigger : 
+                turnRightTigger);
+    }
 
-    private MeshRenderer nowShowingWeaponMeshRender;
+    [Header("Weapon Pick Button")]
+    [SerializeField] private Button mainWeaponButton;
+    [SerializeField] private Button supWeaponButton;
 
-    private WeaponType nowShowingWeaponType = WeaponType.Sword;
+    [SerializeField] private PickWeaponButton[] pickWeaponButtons;
+    [SerializeField] private WeaponType nowShowingWeaponType = WeaponType.None;
+    [Header("Main Weapon")]
+    [SerializeField] private WeaponCanPickData swordData;
+    [Header("Sup Weapon")]
+    [SerializeField] private WeaponCanPickData shieldData;
+    private void CloseAllWeaponButtons()
+    {
+        mainWeaponButton.gameObject.SetActive(false);
+        supWeaponButton.gameObject.SetActive(false);
+    }
+    private bool TryGetWeaponCanPickData(WeaponType weaponType, out WeaponCanPickData weaponCanPickData)
+    {
+        weaponCanPickData = default;
+
+        switch (weaponType)
+        {
+            case WeaponType.Sword: weaponCanPickData = swordData; return true;
+            case WeaponType.Shield: weaponCanPickData = shieldData; return true;
+            default: return false;
+        }
+
+    }
+    private UnityAction Button_NowPickWeapon(WeaponType weaponType)
+    {
+        return weaponType switch
+        {
+            WeaponType.Sword => Button_NowPickSword,
+            WeaponType.Shield => Button_NowPickShield,
+            _ => null
+        };
+    }
+
+    private void OpenWeaponButton()
+    {
+        CloseAllWeaponButtons();
+        WeaponType[] allWeaponCharacterCanPick = _gameManager.characterCanPickWeapon[nowShowingCharacterType];
+
+        if (!TryGetWeaponCanPickData(allWeaponCharacterCanPick[0],out WeaponCanPickData mainWeaponCanPickData))
+        {
+            Debug.LogError("mainWeaponCanPickData == null");
+            return;
+        }
+
+        mainWeaponButton.image.sprite = mainWeaponCanPickData.weaponBagIcon;
+        mainWeaponButton.onClick.AddListener(() => Button_NowPickWeapon(allWeaponCharacterCanPick[0])());
+        mainWeaponButton.gameObject.SetActive(true);
+
+        if (allWeaponCharacterCanPick.Length == 2)
+        {
+            if (!TryGetWeaponCanPickData(allWeaponCharacterCanPick[1], out WeaponCanPickData supWeaponCanPickData))
+            {
+                Debug.LogError("supWeaponCanPickData == null");
+                return;
+            }
+            supWeaponButton.image.sprite = supWeaponCanPickData.weaponBagIcon;
+            supWeaponButton.onClick.AddListener(() => Button_NowPickWeapon(allWeaponCharacterCanPick[1])());
+            supWeaponButton.gameObject.SetActive(true);
+        }
+
+        mainWeaponButton.onClick.Invoke();
+    }
+
+    private MeshRenderer nowShowingWeaponMeshRender
+    {
+        get
+        {
+            return nowShowingWeaponType switch
+            {
+                WeaponType.Sword => swordData.weaponMeshRenderer,
+                WeaponType.Shield => shieldData.weaponMeshRenderer,
+                _ => null
+            };
+        }
+    }
 
     private void CloseAllTheWeapon()
     {
-        swordObject.SetActive(false);
-        shieldObject.SetActive(false);
+        swordData.weaponObject.SetActive(false);
+        shieldData.weaponObject.SetActive(false);
     }
     private void OpenTargetWeapon()
     {
         CloseAllTheWeapon();
         switch (nowShowingWeaponType)
         {
-            case WeaponType.Sword:
-                swordObject.SetActive(true);
-                nowShowingWeaponMeshRender = sword;
-                return;
-            case WeaponType.Shield:
-                shieldObject.SetActive(true);
-                nowShowingWeaponMeshRender = shield;
-                return;
-            default:
-                nowShowingWeaponMeshRender = null;
-                return;
+            case WeaponType.Sword: swordData.weaponObject.SetActive(true); return;
+            case WeaponType.Shield: shieldData.weaponObject.SetActive(true); return;
+            default: return;
         }
 
     }
+    private void ChangePickWeaponButtons()
+    {
+        OpenTargetWeapon();
+        List<PlayerItemData> allTargetWeaponData = _player.bag.GetAllTargetWeaponData(nowShowingWeaponType);
 
-    public void OpenSwordBag()
-    {
-        if (_gameManager == null) return;
-        if (!_gameManager.TryGetSwordStatus(out List<WeaponStatus> allSwordStatus)) return;
-        nowShowingWeaponType = WeaponType.Sword;
-        OpenTargetWeapon();
-        ChangeWeaponButtons(allSwordStatus);
-        CameraMove(CameraShow.Left);
+        for (int i = 0; i < pickWeaponButtons.Length;)
+        {
+            if (i >= allTargetWeaponData.Count)
+            {
+                pickWeaponButtons[i].gameObject.SetActive(false);
+                i++;
+                continue;
+            }
+            PlayerItemData data = allTargetWeaponData[i];
+            if (!_gameManager.TryGetTargetWeaponStatus(nowShowingWeaponType, data.rare, out WeaponStatus weaponStatus)) continue;
+            pickWeaponButtons[i].SetupWeaponPick(weaponStatus);
+            i++;
+        }
     }
-    public void OpenShieldBag()
+
+    public void Button_NowPickSword()
     {
-        if (_gameManager == null) return;
-        if (!_gameManager.TryGetShieldStatus(out List<WeaponStatus> allShieldStatus)) return;
+        nowShowingWeaponType = WeaponType.Sword;
+
+        ChangePickWeaponButtons();
+        CameraMove(nowShowingWeaponType);
+    }
+    public void Button_NowPickShield()
+    {
         nowShowingWeaponType = WeaponType.Shield;
-        OpenTargetWeapon();
-        ChangeWeaponButtons(allShieldStatus);
-        CameraMove(CameraShow.Right);
+
+        ChangePickWeaponButtons();
+        CameraMove(nowShowingWeaponType);
+    }
+
+
+    [Header("Weapon Pick")]
+    [SerializeField] private WeaponStatus mainWeaponStatus;
+    [SerializeField] private WeaponStatus supWeaponStatus;
+
+    public void ChangeWeapon(WeaponStatus weaponStatus)
+    {
+        if (nowPickingWeaponType[nowShowingWeaponType] == NowPickingWeapon.Main)
+        {
+            mainWeaponStatus = weaponStatus;
+            nowShowingWeaponMeshRender.material = mainWeaponStatus.weaponMaterial;
+
+            return;
+        }
+        else if (nowPickingWeaponType[nowShowingWeaponType] == NowPickingWeapon.Sup)
+        {
+            supWeaponStatus = weaponStatus;
+            nowShowingWeaponMeshRender.material = supWeaponStatus.weaponMaterial;
+
+            return;
+        }
+
+        Debug.LogError($"nowPickingWeaponType[nowShowingWeaponType] == {nowPickingWeaponType[nowShowingWeaponType]}");
     }
 
     #endregion
 
-    public void OpenPlayerBag()
+    #region Bag
+    //[Header("Bag")]
+   /* [SerializeField] */private GameObject bagObject;
+    #endregion
+
+    private void ChooseAllTheObject()
     {
-        statusObject.gameObject.SetActive(false);
+        statusObject.SetActive(false);
+        weaponPickObject.SetActive(false);
+        //bagObject.SetActive(false);
+
+    }
+
+    public void OpenCharacterStatusObject()
+    {
+        ChooseAllTheObject();
+        nowShowingWeaponType = WeaponType.None;
+        CameraMove(nowShowingWeaponType);
+        ChangeNowShowingCharacterStatus();
+
+        statusObject.SetActive(true);
+
+    }
+    public void OpenWeaponPickObject()
+    {
+        ChooseAllTheObject();
+        OpenWeaponButton();
+        weaponPickObject.SetActive(true);
+
+    }
+
+
+
+    public void OpenPlayerBagObject()
+    {
+        ChooseAllTheObject();
         bagObject.gameObject.SetActive(true);
     }
 
-    public void OpenPlayerStatus()
-    {
-        statusObject.gameObject.SetActive(true);
-        bagObject.gameObject.SetActive(false);
-    }
+    
 
 
     #region Choose Character
@@ -247,53 +396,34 @@ public class Lobby : MonoBehaviour
 
         return characterModel != null;
     }
-    public void PickAdventurer()
+    private Action ChangePickingCharacter(CharacterType characterType)
     {
-        _player.PickAdventurer();
+        switch (characterType)
+        {
+            case CharacterType.Adventurer: return _player.PickAdventurer;
+            case CharacterType.Magician: return _player.PickMagician;
+            case CharacterType.Thief: return _player.PickThief;
+            case CharacterType.Warrior: return _player.PickWarrior;
+            default:
+                Debug.LogError($"{characterType} is not a valid CharacterType");
+                return null;
+        }
+
+    }
+
+    private void PickCharacter(CharacterType characterType)
+    {
+        ChangePickingCharacter(characterType)?.Invoke();
         if (!TryChangeShowModel()) return;
-        CloseAllWeaponButtons();
-        
-
-        mainWeaponButton.image.sprite = swordBagIcon;
-        supWeaponButton.image.sprite = shieldBagIcon;
-        mainWeaponButton.onClick.AddListener(OpenSwordBag);
-        supWeaponButton.onClick.AddListener(OpenShieldBag);
-
-        mainWeaponButton.gameObject.SetActive(true);
-        supWeaponButton.gameObject.SetActive(true);
 
         TurnOnTargetModel();
-        ChangeNowShowingCharacterStatus();
+        OpenCharacterStatusObject();
     }
-    public void PickMagician()
-    {
-        _player.PickMagician();
-        CloseAllWeaponButtons();
-        mainWeaponButton.gameObject.SetActive(true);
 
-        TurnOnTargetModel();
-        ChangeNowShowingCharacterStatus();
-    }
-    public void PickThief()
-    {
-        _player.PickThief();
-        CloseAllWeaponButtons();
-        mainWeaponButton.gameObject.SetActive(true);
-
-        TurnOnTargetModel();
-        ChangeNowShowingCharacterStatus();
-    }
-    public void PickWarrior()
-    {
-        _player.PickWarrior();
-        if (!TryChangeShowModel()) return;
-        CloseAllWeaponButtons();
-        mainWeaponButton.gameObject.SetActive(true);
-
-
-        TurnOnTargetModel();
-        ChangeNowShowingCharacterStatus();
-    }
+    public void PickAdventurer()=> PickCharacter(CharacterType.Adventurer);
+    public void PickMagician()=> PickCharacter(CharacterType.Magician);
+    public void PickThief() => PickCharacter(CharacterType.Thief);
+    public void PickWarrior() => PickCharacter(CharacterType.Warrior);
 
     #endregion
 
@@ -325,8 +455,8 @@ public class Lobby : MonoBehaviour
         _gameManager.UpdateGameScene(sceneName);
 
         SetUpAllCharacterStatus();
-        PickWarrior();
-        OpenPlayerStatus();
+        PickAdventurer();
+        OpenCharacterStatusObject();
     }
 
 

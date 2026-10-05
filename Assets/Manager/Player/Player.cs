@@ -3,40 +3,23 @@ using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 
-[System.Serializable]
-public struct PlayerItem
-{
-    public string item_code;
-    public int item_numbers;
-    public PlayerItem(string code, int numbers)
-    {
-        item_code = code;
-        item_numbers = numbers;
-    }
-}
-
-[System.Serializable]
-public class PlayerBag
-{
-    public PlayerItem[] items;
-}
-
 
 public class Player : MonoBehaviour
 {
     [Header("Player Data")]
-    public PlayerBag bag { get; private set; } = new PlayerBag();
+    public PlayerBag bag/* { get; private set; } = new PlayerBag()*/;
     public void SetPlayerBag(PlayerBag targetData)
     {
         if (targetData == null || targetData.items.Length == 0) return;
         bag = targetData;
     }
+
     private Status adventurerStatus = new(50, 0, 10, 99, 99, 10, 5, 5);
     private Status magicianStatus = new(50, 0, 5, 5, 20, 5, 10, 5);
     private Status thiefStatus = new(50, 0, 5, 5, 5, 15, 10, 10);
     private Status warriorStatus = new(50, 0, 15, 15, 5, 10, 2, 3);
 
-    public void ResetAllCharacterData()
+    private void ResetAllCharacterData()
     {
         adventurerStatus = new(50, 0, 20, 20, 10, 1, 1, 1);
         magicianStatus = new(50, 0, 5, 5, 20, 5, 10, 5);
@@ -44,6 +27,25 @@ public class Player : MonoBehaviour
         warriorStatus = new(50, 0, 15, 15, 5, 10, 2, 3);
 
     }
+    private void ResetPlayerBag()
+    {
+        bag = new PlayerBag
+        {
+            items = new PlayerItem[]
+            {
+                new PlayerItem("Sword_1_1", 1),new PlayerItem("Sword_2_1", 1),new PlayerItem("Sword_3_1", 1),new PlayerItem("Sword_4_1", 1),new PlayerItem("Sword_5_1", 1),
+                new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1),new PlayerItem("Shield_1_1", 1)
+            }
+        };
+    }
+
+    public void ResetAllPlayerData()
+    {
+        ResetAllCharacterData();
+        ResetPlayerBag();
+    }
+
+
     public void SetAllStatus(AllCharacterData targetData)
     {
         if (targetData == null) return;
@@ -84,7 +86,7 @@ public class Player : MonoBehaviour
 
 
     [Header("Lobby")]
-    public CharacterType choseCharacter = CharacterType.Adventurer;
+    public CharacterType choseCharacter { get; private set; } = CharacterType.Adventurer;
     public void PickAdventurer() => choseCharacter = CharacterType.Adventurer;
     public void PickMagician() => choseCharacter = CharacterType.Magician;
     public void PickThief() => choseCharacter = CharacterType.Thief;
@@ -92,8 +94,17 @@ public class Player : MonoBehaviour
 
 
     [Header("InGame")]
-    public PlayerBag inGameBag;
     public Character controlling_Character;
+    public PlayerBag inGameBag;
+    public PlayerPickWeapon playerPickWeapon { get; private set; } = new PlayerPickWeapon();
+    public void SetPlayerPickWeapon(WeaponStatus mainWeaponData, WeaponStatus supWeaponData = null)
+    {
+        if (choseCharacter == CharacterType.Adventurer)
+            playerPickWeapon = new PlayerPickWeapon(mainWeaponData, supWeaponData);
+        else
+            playerPickWeapon = new PlayerPickWeapon(mainWeaponData);
+    }
+    
     private List<int> killedMonsterLevel = new();
     public void SetUpCharacter(Character character, HealthBar healthBar, ColorBar colorBar)
     {
@@ -128,5 +139,10 @@ public class Player : MonoBehaviour
 
 
     #endregion
+
+    private void Start()
+    {
+        ResetAllPlayerData();
+    }
 
 }

@@ -34,7 +34,6 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
 
     public async UniTask TestNetworkConnection()
     {
-        // 遊戲進行中不重新測試 Lobby 連接。
         if (isMatchmaking || isLeavingRoom || (networkRunner != null && networkRunner.IsRunning)) return;
 
         networkMode = NetworkMode.Offline;

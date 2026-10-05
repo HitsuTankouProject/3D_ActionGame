@@ -46,10 +46,25 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Character Data
+
+    public readonly Dictionary<CharacterType, WeaponType[]> characterCanPickWeapon = new()
+    {
+        { CharacterType.Adventurer, new WeaponType[] { WeaponType.Sword, WeaponType.Shield } },
+        { CharacterType.Magician, new WeaponType[] { WeaponType.Staff } },
+        { CharacterType.Thief, new WeaponType[] { WeaponType.Knife } },
+        { CharacterType.Warrior, new WeaponType[] { WeaponType.Sword } } // testing
+
+        //{ CharacterType.Warrior, new WeaponType[] { WeaponType.Greatsword} }
+    };
+
+
+    #endregion
+
     #region Weapon Data
     [Header("AllWeaponStatus")]
     public AllWeaponStatus allWeaponStatus;
-    public bool TryGetSwordStatus(int rare, out WeaponStatus swordStatus)
+    private bool TryGetSwordStatus(uint rare, out WeaponStatus swordStatus)
     {
         swordStatus = default;
         if (rare <= 0 || rare > 5) return false;
@@ -67,24 +82,7 @@ public class GameManager : MonoBehaviour
 
 
     }
-    public bool TryGetSwordStatus(out List<WeaponStatus> allSwordStatus)
-    {
-        allSwordStatus = new();
-        allSwordStatus.Add(allWeaponStatus.sword_rare_01);
-        allSwordStatus.Add(allWeaponStatus.sword_rare_02);
-        allSwordStatus.Add(allWeaponStatus.sword_rare_03);
-        allSwordStatus.Add(allWeaponStatus.sword_rare_04);
-        allSwordStatus.Add(allWeaponStatus.sword_rare_05);
-        
-        foreach(WeaponStatus swordStatus in allSwordStatus)
-        {
-            if(swordStatus == null) return false;
-        }
-
-        return true;
-    }
-
-    public bool TryGetShieldStatus(int rare, out WeaponStatus swordStatus)
+    private bool TryGetShieldStatus(uint rare, out WeaponStatus swordStatus)
     {
         swordStatus = default;
         if (rare <= 0 || rare > 5) return false;
@@ -103,34 +101,38 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public bool TryGetShieldStatus(out List<WeaponStatus> allShieldStatus)
+    public bool TryGetTargetWeaponStatus(WeaponType weaponType, uint rare, out WeaponStatus weaponStatus)
     {
-        allShieldStatus = new();
-        allShieldStatus.Add(allWeaponStatus.shield_rare_01);
-        allShieldStatus.Add(allWeaponStatus.shield_rare_02);
-        allShieldStatus.Add(allWeaponStatus.shield_rare_03);
-        allShieldStatus.Add(allWeaponStatus.shield_rare_04);
-        allShieldStatus.Add(allWeaponStatus.shield_rare_05);
+        weaponStatus = default;
 
-        foreach (WeaponStatus shieldStatus in allShieldStatus)
+        switch (weaponType)
         {
-            if (shieldStatus == null) return false;
-        }
+            case WeaponType.Sword:
+                if (TryGetSwordStatus(rare, out WeaponStatus swordStatus))
+                {
+                    weaponStatus = swordStatus;
+                    return true;
+                }
+                else Debug.LogError($"[GameManager] Sword Status Not Found! Rare: {rare}");
+                break;
+            case WeaponType.Shield:
+                if (TryGetShieldStatus(rare, out WeaponStatus shieldStatus))
+                {
+                    weaponStatus = shieldStatus;
+                    return true;
+                }
+                else Debug.LogError($"[GameManager] Shield Status Not Found! Rare: {rare}");
+                break;
 
-        return true;
+            default:
+                Debug.LogError($"[GameManager] Weapon Type Not Supported! Type: {weaponType}");
+                break;
+
+        }
+        return false;
     }
 
-
     #endregion
-
-
-
-
-
-
-
-
-
 
     private void Awake()
     {
