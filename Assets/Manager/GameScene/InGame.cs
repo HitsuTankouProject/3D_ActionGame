@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using static Fusion.Sockets.NetBitBuffer;
+using static Gate;
 
 public class InGame : MonoBehaviour
 {
@@ -46,7 +47,7 @@ public class InGame : MonoBehaviour
         miniMapCamera.transform.position = new Vector3(targetPosition.x, targetPosition.y + miniMapCameraHeight, targetPosition.z);
     }
 
-    public List<Character> allPlayerCharacters { get; private set; } = new();
+    public List<Character> allPlayerCharacters/* { get; private set; } = new()*/;
 
     public void RegisterCharacter(Character character)
     {
@@ -81,6 +82,9 @@ public class InGame : MonoBehaviour
     [Header("Character Spawn")]
     [SerializeField] private Transform[] characterSpawnPoints;
     //private Status CharacterSpawnStatus() => _player.TargetCharacterStatus();
+
+
+
 
     const float spawnInterval = 2.0f;
     private void GetSpawnTransform(PlayerRef playerRef, out Vector3 spawnPosition, out Quaternion spawnRotation)
@@ -194,21 +198,11 @@ public class InGame : MonoBehaviour
     public void UpdateCharacterAndMonsterList()
     {
         allMonsters.RemoveAll(character => character == null);
-
         allPlayerCharacters.RemoveAll(character => character == null);
 
-        if (allPlayerCharacters.Count <= 0)
-        {
-            Debug.LogError("[InGame] There have no any Characters here");
-        }
     }
 
     #endregion
-
-    public float commandTime => GameManager.commandFps * Time.deltaTime;
-
-
-
 
     private async UniTask InitializeGameScene()
     {
@@ -247,12 +241,14 @@ public class InGame : MonoBehaviour
 
     private async UniTask EndGameProcess()
     {
+        gameStage = InGameStage.End;
         UpdateCharacterAndMonsterList();
         foreach (Character character in allPlayerCharacters) character.ReturnIdle();
+        _networkManager.TryGoRelease();
+
     }
 
-
-
+    public void GoRelease() => EndGameProcess().Forget();
 
 
     private void Start()
@@ -266,6 +262,9 @@ public class InGame : MonoBehaviour
         if (_gameManager == null || _controlling_Character == null) return;
         MiniMapCameraUpdate();
         UpdateCharacterAndMonsterList();
+        if (allPlayerCharacters.Count <= 0) GoRelease();
+
+
     }
 
 

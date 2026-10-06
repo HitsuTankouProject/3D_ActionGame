@@ -1,27 +1,10 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using static UnityEditor.SceneView;
-
-public struct PlayerPickWeapon
-{
-    public WeaponStatus mainWeaponStatus;
-    public WeaponStatus supWeaponStatus;
-
-    public PlayerPickWeapon(WeaponStatus mainWeapon, WeaponStatus supWeapon = null)
-    {
-        mainWeaponStatus = mainWeapon;
-        supWeaponStatus = supWeapon;
-    }
-
-
-}
 
 public class Lobby : MonoBehaviour
 {
@@ -90,12 +73,20 @@ public class Lobby : MonoBehaviour
 
     private void SetUpAllCharacterStatus()
     {
-        Status adventurer_Status = _player.TargetCharacterStatus(CharacterType.Adventurer);
-        Status warrior_Status = _player.TargetCharacterStatus(CharacterType.Warrior);
+        if(!_player.TryGetCharacterStatus(CharacterType.Adventurer, out Status playerAdventurerStatus))
+        {
+            Debug.LogError(" [Character]Cant Find Player`s status of Adventurer" );
+            return;
+        }
+        if(!_player.TryGetCharacterStatus(CharacterType.Warrior, out Status playerWarriorStatus))
+        {
+            Debug.LogError(" [Character]Cant Find Player`s status of Warrior");
+            return;
+        }
 
-        adventurerStatus = new(adventurer_Status);
+        adventurerStatus = new(playerAdventurerStatus);
         adventurerStatus.actorBasicStatus = adventurerBasicStatus;
-        warriorStatus = new(warrior_Status);
+        warriorStatus = new(playerWarriorStatus);
         warriorStatus.actorBasicStatus = warriorBasicStatus;
 
 
@@ -314,8 +305,9 @@ public class Lobby : MonoBehaviour
 
 
     [Header("Weapon Pick")]
-    [SerializeField] private WeaponStatus mainWeaponStatus;
-    [SerializeField] private WeaponStatus supWeaponStatus;
+    private WeaponStatus mainWeaponStatus;
+    private WeaponStatus supWeaponStatus;
+
 
     public void ChangeWeapon(WeaponStatus weaponStatus)
     {
@@ -379,9 +371,6 @@ public class Lobby : MonoBehaviour
         bagObject.gameObject.SetActive(true);
     }
 
-    
-
-
     #region Choose Character
     private bool TryChangeShowModel()
     {
@@ -435,6 +424,12 @@ public class Lobby : MonoBehaviour
 
     private async UniTask StartPlayerAsync(RoomMode roomMode)
     {
+        WeaponStatus[] characterPickedWeapon = new WeaponStatus[2]
+        {
+            mainWeaponStatus,supWeaponStatus
+        };
+        _player.SetPlayerPickWeapon(characterPickedWeapon);
+
         bool result = await _networkManager.StartMatchmaking(roomMode);
         Debug.Log(result ?
             $"{roomMode.ToString()} Roomへの参加に成功しました。" :
@@ -456,7 +451,10 @@ public class Lobby : MonoBehaviour
         _gameManager.UpdateGameScene(sceneName);
 
         SetUpAllCharacterStatus();
+
         PickAdventurer();
+        mainWeaponStatus = _gameManager.allWeaponStatus.sword_rare_01;
+        supWeaponStatus = _gameManager.allWeaponStatus.shield_rare_01;
         cameraAnimator.ResetTrigger(turnReturnTigger);
 
     }

@@ -44,7 +44,7 @@ public class Gate : MonoBehaviour
 
     private void Start()
     {
-        CloseGate();
+        OpenGate();
     }
 
     public bool open;

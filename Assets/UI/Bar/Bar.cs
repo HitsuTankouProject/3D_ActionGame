@@ -1,7 +1,8 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public abstract class Bar : MonoBehaviour
 {
@@ -76,6 +77,9 @@ public abstract class Bar : MonoBehaviour
 
     public virtual async UniTask ChangeValueTo(float value)
     {
+        CancellationToken token = this.GetCancellationTokenOnDestroy();
+
+
         bool isIncrease = value > currentValue;
 
         float startValue = currentValue;
@@ -84,6 +88,7 @@ public abstract class Bar : MonoBehaviour
         float elapsedTime = 0f;
         while (elapsedTime < changeDuration)
         {
+            token.ThrowIfCancellationRequested();
 
             elapsedTime += Time.deltaTime;
             float progress = Mathf.Clamp01(elapsedTime / changeDuration);

@@ -26,32 +26,55 @@ public enum PlayerStage { Idle, Run, Attack, PassiveSkill, ActiveSkill, UltSkill
 public abstract class Character : Actor, IColorDamageable
 {
     [Header("Character Basic")]
+    /// <summary>
+    /// キャラクターのメッシュに使用する、メインボディ以外のパーツ。
+    /// </summary>
     public MeshRenderer[] othersBodyMeshParts;
+
+    /// <summary>
+    /// ネットワーク上でAnimatorのTriggerを同期するために使用する。
+    /// </summary>
     public NetworkMecanimAnimator networkAnimator;
+    /// <summary>
+    /// キャラクターの移動処理に使用するCharacterController。
+    /// </summary>
     [SerializeField] protected CharacterController characterController;
-
+    /// <summary>
+    /// キャラクターの職業を取得する。
+    /// </summary>
     public abstract CharacterType characterType { get; }
-
+    /// <summary>
+    /// 現在の色レベルを適用するために必要なマテリアル数を取得する。
+    /// メインボディ1個と、その他のボディパーツ数の合計。
+    /// </summary>
     private int requiredMaterialCountPerLevel => (othersBodyMeshParts?.Length ?? 0) + 1;
 
     [Header("Character Stage")]
     /// <summary>キャラクターの現在の行動状態を表します。</summary>
     public PlayerStage stage;
+    /// <summary>
+    /// 現在の追跡対象を解除する。
+    /// </summary>
     protected override void StopTracking()
     {
         base.StopTracking();
        // _inGame.playerCameraFollow.ToggleAlwaysBehindCharacter();
 
     }
-
+    /// <summary>
+    /// 追跡可能距離内に存在するモンスターを検索し、
+    /// 最初に見つかった追跡可能なモンスターを追跡対象に設定する。
+    /// </summary>
+    /// <returns>追跡対象を取得できた場合はtrue。</returns>
     protected override bool TryTrackActor()
     {
         if (_inGame.allMonsters == null || _inGame.allMonsters.Count == 0) return false;
 
         foreach (Monster monster in _inGame.allMonsters)
         {
+            // 存在しないモンスター、または追跡不可能なモンスターは除外する。
             if (monster == null || !monster.canBeTrack) continue;
-
+            // 追跡可能距離より遠いモンスターは対象外とする。
             if (Vector3.Distance(monster.transform.position, transform.position) > trackDistance) continue;
 
             trackingActor = monster;
@@ -130,13 +153,11 @@ public abstract class Character : Actor, IColorDamageable
     private const string ultSkillTrigger = "UltSkill";
     private static readonly int ultSkillTriggerHash = Animator.StringToHash(ultSkillTrigger);
 
-    //private static readonly int attack01TriggerHash = Animator.StringToHash(attack01Trigger);
-    //private static readonly int attack02TriggerHash = Animator.StringToHash(attack02Trigger);
-
-
     /// <summary>
-    /// 通过 NetworkMecanimAnimator 播放 Trigger。
+    /// NetworkMecanimAnimatorを使用して、
+    /// ネットワーク上でAnimatorのTriggerを再生する。
     /// </summary>
+    /// <param name="triggerHash">再生するAnimator TriggerのHash値。</param>
     private void SetNetworkTrigger(int triggerHash)
     {
         if (!Object.HasStateAuthority) return;
@@ -153,31 +174,54 @@ public abstract class Character : Actor, IColorDamageable
 
     #region Attack
     [Header("Attack")]
+    /// <summary>
+    /// 通常攻撃のコンボを最初へ戻すまでの時間。
+    /// </summary>
     [SerializeField] private float attackReturnToFirstAttackTime = 0.5f;
+    /// <summary>
+    /// 次に再生する通常攻撃アニメーションのIndex。
+    /// </summary>
     private int currentAttackIndex = 0;
+    /// <summary>
+    /// 通常攻撃のコンボ継続時間を管理するタイマー。
+    /// </summary>
     [Networked] private TickTimer normalAttackReturnTimer { get; set; }
-    
+    /// <summary>
+    /// 通常攻撃のコンボ継続タイマーが動作中か確認する。
+    /// </summary>
+    /// <returns>タイマーが動作中の場合はtrue。</returns>
     private bool IsNormalAttackReturnTimerCounting() 
         => normalAttackReturnTimer.IsRunning && !normalAttackReturnTimer.Expired(Runner);
+
+    /// <summary>
+    /// 通常攻撃のコンボ継続タイマーを開始する。
+    /// </summary>
     private void SetAttackReturnTimer() 
         => normalAttackReturnTimer = TickTimer.CreateFromSeconds(Runner, attackReturnToFirstAttackTime);
 
     #endregion
 
     /// <summary>
-    /// 2種類の通常攻撃アニメーションを交互に再生します。
-    /// 攻撃のパタン
+    /// 登録されている通常攻撃アニメーションを順番に再生する。
+    /// 一定時間以内に次の攻撃を行わなかった場合は、
+    /// 最初の攻撃アニメーションへ戻る。
     /// </summary>
     protected virtual void Animation_Attack()
     {
         if (!Object.HasStateAuthority) return;
         if (allNormalAttackHashes.Length == 0) return;
-
+        // コンボ継続時間を超えている場合は、
+        // 最初の通常攻撃へ戻す。
         if (!IsNormalAttackReturnTimerCounting()) currentAttackIndex = 0;
         // 前回設定された攻撃トリガーを解除する。
         ReSetAllTheAttackTrigger();
+        // 現在の通常攻撃アニメーションを再生する。
         SetNetworkTrigger(allNormalAttackHashes[currentAttackIndex]);
+
+        // 次の通常攻撃Indexへ進める。
+        // 最後まで進んだ場合は0へ戻る。
         currentAttackIndex = (currentAttackIndex + 1) % allNormalAttackHashes.Length;
+        // コンボ継続時間を更新する。
         SetAttackReturnTimer();
     }
 
@@ -193,7 +237,7 @@ public abstract class Character : Actor, IColorDamageable
 
     /// <summary>　操作できる状態なのかを判定します。</summary>
     /// <returns>　被弾中または死亡中ではない場合は <see langword="true"/>。</returns>
-    private bool IsAllowCommand() => stage != PlayerStage.Hit && stage != PlayerStage.Death;
+    protected bool IsAllowCommand() => stage != PlayerStage.Hit && stage != PlayerStage.Death;
 
     /// <summary>
     /// 次のコマンドの受付を許可します。
@@ -255,7 +299,10 @@ public abstract class Character : Actor, IColorDamageable
     /// </summary>
     public virtual void ReturnIdle()
     {
+        if (Object == null || !Object.IsValid) return;
         if (!Object.HasStateAuthority) return;
+        if (actorAnimator == null) return;
+
 
         stage = PlayerStage.Idle;
 
@@ -263,9 +310,6 @@ public abstract class Character : Actor, IColorDamageable
         actorAnimator.SetBool(runBool, false);
 
         // 実行中または予約されているアニメーショントリガーを解除する。
-        //actorAnimator.ResetTrigger(attack01TriggerHash);
-        //actorAnimator.ResetTrigger(attack02TriggerHash);
-
         ReSetAllTheAttackTrigger();
         actorAnimator.ResetTrigger(passiveSkillTriggerHash);
         actorAnimator.ResetTrigger(activeSkillTriggerHash);
@@ -312,25 +356,35 @@ public abstract class Character : Actor, IColorDamageable
         healthBar.ChangeBackBar(recoverMaxHpScale[colorSystem.lostColorLevel]).Forget();
 
     }
+    /// <summary>
+    /// キャラクターへダメージを適用する。
+    /// HPが残っている場合は被ダメージアニメーションを再生する。
+    /// </summary>
+    /// <param name="damage">適用するダメージ量。</param>
     protected override void GotHit(int damage)
     {
         base.GotHit(damage);
         if(nowHp > 0) SetNetworkTrigger(gotHitTriggerHash);
 
     }
+    /// <summary>
+    /// キャラクターの死亡処理を行い、
+    /// 死亡アニメーションを再生してInGameの管理対象から解除する。
+    /// </summary>
     protected override void Death()
     {
         base.Death();
         stage = PlayerStage.Death;
         SetNetworkTrigger(deathTriggerHash);
+        _inGame.UnregisterCharacter(this);
     }
 
     /// <summary> 回復可能な最大HPを超えない範囲でHPを回復します。 </summary>
     /// <param name="recoverAmount">回復するHP量。</param>
-    public virtual void Recover(int index)
+    public virtual void Recover(int recoverAmount)
     {
         if (!Object.HasStateAuthority) return;
-        nowHp = Mathf.Min((nowHp + index), CanRecoverMaxHp());
+        nowHp = Mathf.Min((nowHp + recoverAmount), CanRecoverMaxHp());
     }
 
     /// <summary>
@@ -398,7 +452,14 @@ public abstract class Character : Actor, IColorDamageable
         RequestChangeStage(PlayerStage.ActiveSkill);
 
     }
+    /// <summary>
+    /// FixedUpdateNetworkで使用する移動入力。
+    /// </summary>
     private Vector3 moveInput;
+    /// <summary>
+    /// キャラクターの移動入力を設定する。
+    /// </summary>
+    /// <param name="direction">移動方向。</param>
     public void SetMoveInput(Vector3 direction)
     {
         if (!Object.HasStateAuthority || !IsAllowCommand()) return;
@@ -406,39 +467,59 @@ public abstract class Character : Actor, IColorDamageable
         moveInput = direction;
     }
 
-
+    /// <summary>
+    /// FixedUpdateNetworkで使用する回転入力。
+    /// </summary>
     private Vector3 turnInput;
+    /// <summary>
+    /// キャラクターの回転入力を設定する。
+    /// </summary>
+    /// <param name="newTurnInput">キャラクターが向く方向。</param>
     public void SetTurnInput(Vector3 newTurnInput)
     {
         if (!Object.HasStateAuthority || !IsAllowCommand()) return;
         turnInput = newTurnInput;
 
     }
-
+    /// <summary>
+    /// 指定された方向へキャラクターを回転させる。
+    /// Y軸方向の値は回転計算から除外する。
+    /// </summary>
+    /// <param name="faceTo">キャラクターが向く方向。</param>
     protected override void Turn(Vector3 faceTo)
     {
+        // 水平方向のみを使用して回転する。
         faceTo.y = 0f;
+        // 方向ベクトルがほぼ0の場合は回転しない。
         if (faceTo.sqrMagnitude < 0.0001f) return;
 
         base.Turn(faceTo);
     }
-
+    /// <summary>
+    /// 指定された方向へキャラクターを移動する。
+    /// 移動入力がない場合は走行アニメーションを停止する。
+    /// </summary>
+    /// <param name="moveDirection">キャラクターの移動方向。</param>
     public override void Move(Vector3 moveDirection)
     {
         if (!Object.HasStateAuthority) return;
 
         if (moveDirection == Vector3.zero)
         {
+            // 移動入力がない場合は走行状態を解除する。
             actorAnimator.SetBool(runBool, false);
 
             CanDoNextCommand();
             return;
         }
 
+        // 次のコマンドを実行可能な場合はRun状態へ変更する。
         if (canDoNextCommand) RequestChangeStage(PlayerStage.Run);
 
+        // Y軸方向の入力は移動に使用しない。
         moveDirection.y = 0.0f;
 
+        // 入力値が1未満の場合は方向ベクトルを正規化する。
         if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
 
         characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
@@ -487,7 +568,13 @@ public abstract class Character : Actor, IColorDamageable
 
     }
 
-
+    /// <summary>
+    /// 指定された量の色チャージを消費する。
+    /// 色喪失レベルが変化した場合は、HP回復上限と
+    /// キャラクターのマテリアルを更新する。
+    /// </summary>
+    /// <param name="value">消費する色チャージ量。</param>
+    /// <returns>色チャージを消費できた場合はtrue。</returns>
     public virtual bool TryReduceColor(uint value)
     {
         if (colorSystem == null) return false;
@@ -507,6 +594,14 @@ public abstract class Character : Actor, IColorDamageable
         if (needToChangeMaterial) ChangeMeshColor();
         return true;
     }
+
+    /// <summary>
+    /// 指定された量の色チャージを増加させる。
+    /// 色喪失レベルが変化した場合は、HP回復上限と
+    /// キャラクターのマテリアルを更新する。
+    /// </summary>
+    /// <param name="value">増加する色チャージ量。</param>
+    /// <returns>色チャージを変更できた場合はtrue。</returns>
     public virtual bool TryIncreaseColor(uint value)
     {
         if (colorSystem == null) return false;
@@ -529,63 +624,114 @@ public abstract class Character : Actor, IColorDamageable
 
     #endregion
 
-    protected void InitializeCharacter(Status status)
+    /// <summary>
+    /// プレイヤーデータに登録されている武器情報を取得し、
+    /// キャラクターのメイン武器を初期化する。
+    /// </summary>
+    protected virtual void InitializeCharacterWeapon()
     {
-        if (!Object.HasStateAuthority) return;
+        //WeaponStatus[] allWeaponStatus
+        if (_player.allWeaponStatus.Length <= 0)
+        {
+            Debug.LogError("[Character] Player`s AllWeaponStatus Length <=0");
+            return;
+        }
+        // 登録されている最初の武器をメイン武器として使用する。
+        WeaponStatus mainWeaponStatus = _player.allWeaponStatus[0];
+        mainWeapon.WeaponInit(this, mainWeaponStatus);
 
-        actorStatus.StatusInit(status);
 
-        networkMaxHp = maxHp;
-        nowHp = networkMaxHp;
-
-        ReturnToMinDefScale();
     }
 
+    /// <summary>
+    /// プレイヤーデータから現在の職業に対応する
+    /// ステータスを取得し、ActorStatusへ設定する。
+    /// </summary>
+    protected void InitializeCharacter()
+    {
+        if (!Object.HasStateAuthority) return;
+        if(!_player.TryGetCharacterStatus(characterType,out Status status))
+        {
+            Debug.LogError($"[Chectaor] Can Find {characterType.ToString()}`s Status");
+            return;
+        }
+        actorStatus.StatusInit(status);
+    }
+
+
+    /// <summary>
+    /// キャラクターが使用するHPバーと色チャージバーを
+    /// Canvas上のUIへ切り替える。
+    /// </summary>
+    /// <param name="canvasHealthBar">変更後のHPバー。</param>
+    /// <param name="canvasColorBar">変更後の色チャージバー。</param>
     public void ChangeCanvasBar(HealthBar canvasHealthBar, ColorBar canvasColorBar)
     {
+        // キャラクター側に設定されていたHPバーを非表示にする。
         healthBar.gameObject.SetActive(false);
         healthBar = canvasHealthBar;
         colorBar = canvasColorBar;
     }
-
+    /// <summary>
+    /// キャラクターをInGameへ登録し、
+    /// ステータスと武器などの初期設定を行う。
+    /// </summary>
     public override void ActorInit()
     {
         InGame.Instance?.RegisterCharacter(this);
         canBeTrack = true;
 
         if (!Object.HasStateAuthority) return;
-        InitializeCharacter(_gameManager.gamePlayer.TargetCharacterStatus(characterType));
+        InitializeCharacter();
+        InitializeCharacterWeapon();
         if (networkMaxHp > 0) UpdateHealthBar(false);
     }
+    /// <summary>
+    /// NetworkObjectがSpawnされた際に、
+    /// キャラクターとステータスを初期化する。
+    /// </summary>
     public override void Spawned()
     {
         ActorInit();
         if (!Object.HasStateAuthority) return;
         AllStatusInit();
-
+        
     }
-
+    /// <summary>
+    /// NetworkObjectがDespawnされた際に、
+    /// InGameのキャラクター管理から登録を解除する。
+    /// </summary>
+    /// <param name="runner">使用中のNetworkRunner。</param>
+    /// <param name="hasState">Despawn時にStateを保持しているか。</param>
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         InGame.Instance?.UnregisterCharacter(this);
     }
 
 
-
+    /// <summary>
+    /// State Authority側で毎Network Tick、
+    /// 移動・回転・追跡対象の更新を行う。
+    /// </summary>
     public override void FixedUpdateNetwork()
     {
         if (!Object.HasStateAuthority || !_inGame.IsGamePlaying()) return;
 
+
+        // 保存されている入力を使用して移動と回転を更新する。
         Move(moveInput);
         Turn(turnInput);
-        if (trackingActor == null)
-        {
-            TryTrackActor(); 
-        }
-        else
-        {
-            UpdateTracking();
-        }
+
+        // 追跡対象が存在しない場合は新しい対象を検索する。
+        //if (trackingActor == null)
+        //{
+        //    TryTrackActor(); 
+        //}
+        // すでに対象が存在する場合は追跡状態を更新する。
+        //else
+        //{
+        //    UpdateTracking();
+        //}
 
     }
 

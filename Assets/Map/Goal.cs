@@ -30,7 +30,7 @@ public class Goal : MonoBehaviour
         allCharactersInGoal.Add(character);
         if (IsEndGame())
         {
-
+            _inGame.GoRelease();
         }
 
 

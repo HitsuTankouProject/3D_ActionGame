@@ -150,9 +150,15 @@ public class GameTitle : MonoBehaviour
         }
         PlayerBag playerBagData = await _networkManager.GotData_Bag();
         AllCharacterData characterData = await _networkManager.GotData_AllCharacter();
+        playerBagData.DeBugPrintAllItems();
+
 
         _player.SetPlayerBag(playerBagData);
+        _player.bag.DeBugPrintAllItems();
+
         _player.SetAllStatus(characterData);
+
+
     }
 
 
@@ -203,7 +209,7 @@ public class GameTitle : MonoBehaviour
         bool success = await _networkManager.RequestAccountApply(ac_user_email.text);
         if (success)
         {
-            MessageBoxOn(" アカウント申請成功 [迷惑メールボックスに送る可能性がありますbbvbbbbbhbbb] ", Color.green).Forget();
+            MessageBoxOn(" アカウント申請成功 [迷惑メールボックスに送る可能性があります] ", Color.green).Forget();
         }
         else MessageBoxOn("　アカウント申請失敗　", Color.red).Forget();
     }

@@ -105,7 +105,7 @@ public class AccountInformate : MonoBehaviour
             return;
         }
 
-        foreach (var item in bag.items)
+        foreach (var item in bag.Items)
         {
             resultText += $"アイテム：{item.item_code}, 数：{item.item_numbers}　\n";
         }
@@ -148,7 +148,7 @@ public class AccountInformate : MonoBehaviour
         //Debug.Log(ss);
 
 
-        bool success = await _networkManager.RequestUpdateBagData(playerBag.items);
+        bool success = await _networkManager.RequestUpdateBagData(playerBag.Items);
         if (success)
         {
             WriteDebug(debug, "　アイテム増えました。　", Color.black);

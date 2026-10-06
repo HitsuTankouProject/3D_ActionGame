@@ -1,12 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
-using Fusion;
 using System;
 using System.Threading;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using static Gate;
-using static UnityEngine.Rendering.DebugUI;
+
 
 public class Release : MonoBehaviour
 {
@@ -16,7 +13,7 @@ public class Release : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(Instance);
+        else Destroy(this);
     }
     private GameManager _gameManager => GameManager.Instance;
     private Player _player => _gameManager.gamePlayer;
@@ -41,7 +38,8 @@ public class Release : MonoBehaviour
     {
         if (messageBox == null) return;
         CancelMessageBox();
-        CancellationTokenSource currentTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        CancellationTokenSource currentTokenSource = 
+            CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
         messageBoxTokenSource = currentTokenSource;
         messageBox.text = message;
         messageBox.color = messageColor;
@@ -85,15 +83,21 @@ public class Release : MonoBehaviour
         int averageKilledMonsterLeve = _player.GetAverageKilledMonsterLevel();
 
         return (_networkManager.networkMode == NetworkMode.Online
-            || isLogin
-            || averageKilledMonsterLeve > 0);
+                && isLogin
+                && averageKilledMonsterLeve > 0);
 
 
 
     }
     private bool TryGetRewardStatus(out Status newStatus)
     {
-        newStatus = _player.TargetCharacterStatus(_player.choseCharacter);
+        newStatus = default;
+        if(!_player.TryGetCharacterStatus(_player.choseCharacter, out Status targetStatus))
+        {
+            Debug.LogError($"[Release] {_player.choseCharacter}`s Status Cant Find");
+            return false;
+        }
+        newStatus = targetStatus;
 
         int rewardLevelPoint = _player.GetAverageKilledMonsterLevel();
         int playerCharacterLevel = newStatus.Lv;
@@ -120,6 +124,7 @@ public class Release : MonoBehaviour
             MessageBoxOn("Reward Status Calculate Error", Color.red).Forget();
 
             Debug.LogError(" [Release] Reward Status Calculate Error");
+            gameStage = ReleaseStage.RewardTimeEnd;
             return;
         }
 
@@ -128,12 +133,11 @@ public class Release : MonoBehaviour
         if (!canDataBaseUpdate)
         {
             MessageBoxOn("DataBase Cant Update the newStatus", Color.red).Forget();
-            Debug.LogError(" [Release] DataBase Cant Update the newStatus");
-            return;
+            Debug.LogWarning(" [Release] DataBase Cant Update the newStatus");
         }
+        else MessageBoxOn("NewStatus Update Sucessed", Color.green).Forget();
 
-        MessageBoxOn("NewStatus Update Sucessed", Color.green).Forget();
-        gameStage = ReleaseStage.RewardTime;
+        gameStage = ReleaseStage.RewardTimeEnd;
     }
 
 
@@ -141,39 +145,36 @@ public class Release : MonoBehaviour
     [SerializeField] private GameObject loadingPanel;
 
     private bool initFinish = false;
-    private void Init()
+    private async UniTask Init()
     {
         gameStage = ReleaseStage.Init;
         loadingPanel.SetActive(true);
-        RewardProcess().Forget();
+        await RewardProcess();
+        loadingPanel.SetActive(false);
+        initFinish = true;
     }
 
-    public async UniTask Button_BackToGameTitle()
+    private async UniTask BackToGameTitle()
     {
         await _networkManager.LeaveRoomAndReturnToLobby();
 
         _networkManager.TryGoGameTitle();
 
     }
-    public async UniTask Button_BackToLobby()
+    public void Button_BackToGameTitle()=> BackToGameTitle().Forget();
+    public async UniTask BackToLobby()
     {
         await _networkManager.LeaveRoomAndReturnToLobby();
 
         _networkManager.TryGoLobby();
 
     }
+    public void Button_BackToLobby() => BackToLobby().Forget();
+
 
     private void Start()
     {
-        Init();
+        Init().Forget();
     }
 
-    private void Update()
-    {
-        if (gameStage != ReleaseStage.RewardTime) return;
-        if (!initFinish)
-        {
-            initFinish = true;
-        }
-    }
 }

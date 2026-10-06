@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 5195996}
   - component: {fileID: 5195995}
   m_Layer: 5
-  m_Name: Button (Legacy)
+  m_Name: Lobby
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -201,7 +201,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5195996}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 443540895}
+        m_TargetAssemblyTypeName: Release, Assembly-CSharp
+        m_MethodName: Button_BackToLobby
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &5195996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,8 +411,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 379.81903, y: -43.136383}
-  m_SizeDelta: {x: 759.65, y: 138.771}
+  m_AnchoredPosition: {x: 311.72284, y: -43.136383}
+  m_SizeDelta: {x: 895.84, y: 138.771}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &517110944
 MonoBehaviour:
@@ -830,8 +842,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 379.8245, y: 97.2953}
-  m_SizeDelta: {x: 759.65, y: 138.771}
+  m_AnchoredPosition: {x: 311.7293, y: 97.2953}
+  m_SizeDelta: {x: 895.84, y: 138.771}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1093207891
 MonoBehaviour:
@@ -880,7 +892,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50.45
+  m_fontSize: 59.5
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1187,7 +1199,7 @@ GameObject:
   - component: {fileID: 1356927415}
   - component: {fileID: 1356927414}
   m_Layer: 5
-  m_Name: Button (Legacy) (1)
+  m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1256,7 +1268,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1356927415}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 443540895}
+        m_TargetAssemblyTypeName: Release, Assembly-CSharp
+        m_MethodName: Button_BackToGameTitle
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1356927415
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1753,8 +1777,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 379.81903, y: -182.74973}
-  m_SizeDelta: {x: 759.65, y: 138.771}
+  m_AnchoredPosition: {x: 311.72284, y: -182.74973}
+  m_SizeDelta: {x: 895.84, y: 138.771}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1862366474
 MonoBehaviour:
@@ -1803,7 +1827,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50.25
+  m_fontSize: 59.3
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

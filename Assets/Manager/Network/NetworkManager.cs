@@ -780,10 +780,20 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
     {
         var result = await RequestGetData(AllowedPurpose.Bag);
 
-        if(!result.isSuccess) return null;
+        if(!result.isSuccess)
+        {
+            Debug.LogError("GotData_Bag non Success");
+            return null;
+        }
+        Debug.Log(result.gotData);
         GetPlayerData<PlayerBag> resultData = JsonUtility.FromJson<GetPlayerData<PlayerBag>>(result.gotData);
         if (!resultData.success) return null;
 
+        if (resultData.get_data == null)
+        {
+            Debug.LogError("Bag get_data is null");
+            return null;
+        }
         return resultData.get_data;
     }
 
