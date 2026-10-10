@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime;
@@ -32,6 +32,7 @@ public class ColorBar : Bar
 
     public override async UniTask ChangeValueTo(float value)
     {
+        if (value == 0) return;
 
         float nowValue = barMaximumValue * currentValue;
         float targetValue = nowValue + value;
@@ -39,24 +40,24 @@ public class ColorBar : Bar
 
         if (isIncrease)
         {
-            // �ő�l�𒴂��邽�тɁA���̐F���x���֌J��z���B
+            // 最大値を超えるたびに、次の色レベルへ繰り越す。
             while (targetValue > barMaximumValue)
             {
-                // ���݂̃o�[���ő�l�܂ő���������B
+                // 現在のバーを最大値まで増加させる。
                 await base.ChangeValueTo(1.0f);
 
                 targetValue -= barMaximumValue;
 
-                // ���̐F���x���̃o�[��0����J�n����B
+                // 次の色レベルのバーを0から開始する。
                 SetFrontBarValueImmediately(0.0f);
             }
         }
         else
         {
-            // 0������邽�тɁA���̐F�r�����x���֌J��z���B
+            // 0を下回るたびに、次の色喪失レベルへ繰り越す。
             while (targetValue < 0.0f)
             {
-                // ���݂̃o�[��0�܂Ō���������B
+                // 現在のバーを0まで減少させる。
                 await base.ChangeValueTo(0.0f);
 
                 targetValue += barMaximumValue;

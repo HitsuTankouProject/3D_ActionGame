@@ -606,12 +606,20 @@ public abstract class Character : Actor, IColorDamageable
     {
         if (colorSystem == null) return false;
         // 減少後の色チャージ量と色喪失レベルを計算する。
-        bool canUse = colorSystem.CanColorCharge(ColorChargeType.Decrease, value, true, out int nextCharge, out int nextLostLevel);
+        bool canUse = colorSystem.CanColorCharge(ColorChargeType.Increase, value, true, out int nextCharge, out int nextLostLevel);
         // 必要な色チャージを消費できない場合は変更しない。
         if (!canUse) return false;
         bool needToChangeMaterial = colorSystem.lostColorLevel != nextLostLevel;
+
+        if (nextLostLevel == 0 && nextCharge >= ColorSystem.maxColorCharge) 
+        {
+            nextCharge = ColorSystem.maxColorCharge;
+            value = (uint)(nextCharge - colorSystem.nowColorCharge);
+        }
+
         // 計算済みの色チャージ量と色喪失レベルを反映する。
         colorSystem.ColorCharge(nextCharge, nextLostLevel);
+
         // 自分が操作しているキャラクターの場合のみ、
         // Canvas上の色チャージバーを更新する。
         if (colorBar != null) colorBar.ChangeValueTo(+value).Forget();

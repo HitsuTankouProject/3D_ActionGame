@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 現在のGameScene。
     /// </summary>
-    public GameScene nowGameScene { get; private set; } = GameScene.None;
+    public GameScene nowGameScene/* { get; private set; } */= GameScene.None;
     /// <summary>
     /// 現在のGameScene情報を更新する。
     /// </summary>

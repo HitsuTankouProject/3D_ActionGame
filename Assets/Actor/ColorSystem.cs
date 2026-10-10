@@ -52,7 +52,7 @@ public class ColorSystem : MonoBehaviour
     /// <summary> 各色喪失レベルで使用するマテリアル。 </summary>
     public List<ColorMaterial> m_AllColorLevels;
     /// <summary> 現在の色喪失レベル。 </summary>
-    public int lostColorLevel /*{ get; private set; } */= 0;
+    public int lostColorLevel { get; private set; } = 0;
 
     /// <summary>
     /// 現在の色喪失レベルに対応するマテリアルを取得します。
@@ -134,6 +134,13 @@ public class ColorSystem : MonoBehaviour
                     nextCharge = Mathf.Min(result, maxColorCharge);
                     return true;
                 }
+
+                if(result >= maxColorCharge && nextLostLevel == 0)
+                {
+                    nextCharge = maxColorCharge;
+                    return true;
+                }
+
                 // 余剰チャージを前の色喪失レベルへ繰り越す。
                 while (result > maxColorCharge && nextLostLevel > 0)
                 {

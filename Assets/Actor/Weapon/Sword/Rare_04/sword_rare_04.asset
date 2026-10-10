@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80602e01e630fa144bcb70617b71940a, type: 3}
   m_Name: sword_rare_04
   m_EditorClassIdentifier: Assembly-CSharp::WeaponStatus
-  atkBuffIndex: 1.21
-  defBuffIndex: 0
+  type: 1
+  rare: 4
+  code: 1
   weaponMaterial: {fileID: 2100000, guid: ec249d65f1017c145961ebf2766e1ede, type: 2}
   weaponIcon: {fileID: 21300000, guid: bf024f6a2216e6d48ba9cd0fff558b0f, type: 3}
+  atkBuffIndex: 1.21
+  defBuffIndex: 0
