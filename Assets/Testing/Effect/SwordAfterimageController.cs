@@ -26,6 +26,8 @@ public class SwordAfterimageController : MonoBehaviour
     {
         lastTopPosition = swordTop.position;
         lastBottomPosition = swordBottom.position;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
     private void Update()
     {

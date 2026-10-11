@@ -193,7 +193,7 @@ public class GameManager : MonoBehaviour
                 break;
 
             default:
-                Debug.LogError($"[GameManager] Weapon Type Not Supported! Type: {weaponType}");
+                Debug.LogWarning($"[GameManager] Weapon Type Not Supported! Type: {weaponType}");
                 break;
 
         }

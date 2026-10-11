@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6787359d36385774dbb4eb4c0056f4ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColorBall
+  modelRenderer: {fileID: 8927120696985234656}
+  setUpDone: 0
 --- !u!33 &3508453623854578456
 MeshFilter:
   m_ObjectHideFlags: 0

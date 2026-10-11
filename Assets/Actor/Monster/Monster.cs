@@ -35,7 +35,7 @@ public enum MonsterAction { None, Run, Thinking, Attack, Skill }
 /// <summary>
 /// モンスター共通の管理の基底クラス。
 /// </summary>
-public abstract class Monster : Actor
+public abstract class Monster : Actor, IItemDrop
 {
 
     [Header("Monster Basic")]
@@ -708,7 +708,6 @@ public abstract class Monster : Actor
     protected override void Death()
     {
         if (!Object.HasStateAuthority) return;
-        _inGame.UnregisterMonster(this);
         base.Death();
 
     }
@@ -722,16 +721,11 @@ public abstract class Monster : Actor
         // 死亡処理の重複実行を防止する。
         if (isStartDeathProcessing) return;
         isStartDeathProcessing = true;
-        Death();
         _gameManager.gamePlayer.AddKillMonsterStatus(actorStatus.status.Lv);
 
-
-        StopTracking();
+        Death();
         ApplyCurrentAnimation();
         SetNetworkAction(MonsterAction.None);
-
-
-
     }
     /// <summary>
     /// 死亡アニメーション終了後に呼び出され、
@@ -747,7 +741,10 @@ public abstract class Monster : Actor
     /// InGameのモンスター管理から登録を解除する。
     /// </summary>
     public override void Despawned(NetworkRunner runner, bool hasState)
-        => InGame.Instance?.UnregisterMonster(this);
+    {
+        InGame.Instance?.UnregisterMonster(this);
+        this.DropMultiColorBallIn(transform.position,3);
+    }
 
     #endregion
 

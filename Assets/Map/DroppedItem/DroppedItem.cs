@@ -1,8 +1,14 @@
 ﻿using Unity.VisualScripting;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+
+public enum ItemType { None, Weapon, ColorBall }
 
 public abstract class DroppedItem : MonoBehaviour
 {
+    public abstract ItemType type { get; }
+    protected ItemPoolManager _itemPoolManager => ItemPoolManager.Instance;
+
     #region Move To Character
     protected Transform targetCharacter => GameManager.Instance?.gamePlayer?.controlling_Character?.transform;
     protected virtual float attractionDistance => 3f;
@@ -31,14 +37,15 @@ public abstract class DroppedItem : MonoBehaviour
     protected virtual float frequency => 1f;
 
     protected LayerMask mapLayer;
-    protected Renderer modelRenderer;
-    protected Vector3 serUpPosition;
+    [SerializeField] protected Renderer modelRenderer;
+    protected Vector3 setUpPosition;
     private float elapsedTime;
     private float actualAmplitude;
 
-    protected virtual void SetUp()
+    protected bool setUpDone = false;
+    public virtual void SetUp()
     {
-        serUpPosition = transform.localPosition;
+        setUpPosition = transform.position;
         elapsedTime = 0f;
 
         if (modelRenderer == null) return;
@@ -51,6 +58,7 @@ public abstract class DroppedItem : MonoBehaviour
         {
             actualAmplitude = Mathf.Min(amplitude, floorHit.distance);
         }
+        setUpDone = true;
     }
 
     protected virtual void UpAndDown()
@@ -60,7 +68,7 @@ public abstract class DroppedItem : MonoBehaviour
         float offset = Mathf.Sin(
             elapsedTime * frequency * Mathf.PI * 2f) * actualAmplitude;
 
-        transform.localPosition = serUpPosition + Vector3.up * offset;
+        transform.position = setUpPosition + Vector3.up * offset;
     }
 
 
@@ -69,23 +77,17 @@ public abstract class DroppedItem : MonoBehaviour
     private void Awake()
     {
         mapLayer = LayerMask.GetMask("Map");
-        modelRenderer = GetComponent<Renderer>();
-    }
-
-
-    protected virtual void Start()
-    {
-        SetUp();
     }
 
     protected virtual void Update()
     {
+        if (!setUpDone) return;
         ItemRotation();
         UpAndDown();
         if (IsCloseEnough()) ItemMoveToCharacter();
     }
 
-
+    protected void ReturnToPool() => _itemPoolManager.ReturnToPool(this);
     protected abstract void ItemReaction(Collider other);
     private void OnTriggerEnter(Collider other)=> ItemReaction(other);
 

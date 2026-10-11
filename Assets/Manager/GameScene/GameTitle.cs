@@ -256,7 +256,8 @@ public class GameTitle : MonoBehaviour
         
         loginIcon.sprite = sp_Logout;
         internetIcon.sprite = sp_NoInternet;
-        
+        InputManager.OnMoveMousePad();
+
         if (_gameManager == null) return;
         _gameManager.UpdateGameScene(sceneName);
     }

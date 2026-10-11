@@ -1,14 +1,15 @@
 ﻿using DataBase;
 using NUnit.Framework;
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// プレイヤーが所有するゲームデータを管理するクラス。
 /// キャラクターステータス、バッグ、Lobbyでの選択情報、
 /// InGame中のキャラクター情報、モンスター討伐情報などを管理する。
 /// </summary>
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, ICharacterInPut
 {
     [Header("Player Data")]
     /// <summary>
@@ -189,6 +190,8 @@ public class Player : MonoBehaviour
     /// 現在プレイヤーが操作しているキャラクター。
     /// </summary>
     public Character controlling_Character;
+    public Character character => controlling_Character;
+
     /// <summary>
     /// InGame中に使用するバッグデータ。
     /// </summary>
@@ -215,6 +218,27 @@ public class Player : MonoBehaviour
     /// </summary>
     /// <param name="level">倒したモンスターのレベル。</param>
     public void AddKillMonsterStatus(int level) => killedMonsterLevel.Add(level);
+
+
+    public void InGamePlayerInput()
+    {
+        if(controlling_Character == null) return;
+
+        if (InputManager.canMoveMousePad) return;
+
+        if (CharacterInPut.TryActiveSkill(this)) return;
+        else if (CharacterInPut.TryPassiveSkill(this)) return;
+        else if(CharacterInPut.TryNormalAttack(this)) return;
+
+        CharacterInPut.CharacterMove(this);
+    }
+
+
+
+
+
+
+
 
     #region Release
     /// <summary>

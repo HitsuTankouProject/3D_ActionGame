@@ -467,20 +467,7 @@ public abstract class Character : Actor, IColorDamageable
         moveInput = direction;
     }
 
-    /// <summary>
-    /// FixedUpdateNetworkで使用する回転入力。
-    /// </summary>
-    private Vector3 turnInput;
-    /// <summary>
-    /// キャラクターの回転入力を設定する。
-    /// </summary>
-    /// <param name="newTurnInput">キャラクターが向く方向。</param>
-    public void SetTurnInput(Vector3 newTurnInput)
-    {
-        if (!Object.HasStateAuthority || !IsAllowCommand()) return;
-        turnInput = newTurnInput;
-
-    }
+    private float turnSpeed = 720.0f;
     /// <summary>
     /// 指定された方向へキャラクターを回転させる。
     /// Y軸方向の値は回転計算から除外する。
@@ -493,7 +480,9 @@ public abstract class Character : Actor, IColorDamageable
         // 方向ベクトルがほぼ0の場合は回転しない。
         if (faceTo.sqrMagnitude < 0.0001f) return;
 
-        base.Turn(faceTo);
+        Quaternion targetRotation = Quaternion.LookRotation(faceTo, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Runner.DeltaTime);
+
     }
     /// <summary>
     /// 指定された方向へキャラクターを移動する。
@@ -521,7 +510,7 @@ public abstract class Character : Actor, IColorDamageable
 
         // 入力値が1未満の場合は方向ベクトルを正規化する。
         if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
-
+        Turn(moveDirection);
         characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
     }
 
@@ -725,10 +714,8 @@ public abstract class Character : Actor, IColorDamageable
     {
         if (!Object.HasStateAuthority || !_inGame.IsGamePlaying()) return;
 
-
         // 保存されている入力を使用して移動と回転を更新する。
         Move(moveInput);
-        Turn(turnInput);
 
         // 追跡対象が存在しない場合は新しい対象を検索する。
         //if (trackingActor == null)

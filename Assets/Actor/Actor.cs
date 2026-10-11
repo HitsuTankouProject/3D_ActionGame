@@ -363,7 +363,7 @@ public abstract class Actor : NetworkBehaviour, IDamageable
     /// 指定された方向へアクターを向かせる。
     /// </summary>
     /// <param name="direction">向く方向。</param>
-    protected virtual void Turn(Vector3 direction) => transform.rotation = Quaternion.LookRotation(direction);
+    protected abstract void Turn(Vector3 direction);
     /// <summary>
     /// 次の行動を実行可能かを表す。
     /// </summary>

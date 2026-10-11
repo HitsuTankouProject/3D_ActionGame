@@ -2,11 +2,14 @@
 
 public class WeaponDrop : DroppedItem
 {
-    [SerializeField] private MeshRenderer renderer;
+    public override ItemType type => ItemType.Weapon;
+
+
     private const string weaponDropIconTag = "_weaponIcon";
 
-    private const string emissionLevelTag = "_emissionLevel";
     private const string emissionColorTag = "_emissionColor";
+    private const string emissionLevelTag = "_emissionLevel";
+
     private readonly string[] allEmissionColorCode = new string[5]
     {
         "#CFCFCF", "#37FF00", "#0055FF", "#BA00FF", "#FFD600"
@@ -16,10 +19,14 @@ public class WeaponDrop : DroppedItem
 
     private bool CheckShaderProperty()
     {
-        return renderer != null
-            && renderer.material.HasProperty(weaponDropIconTag)
-            && renderer.material.HasProperty(emissionLevelTag)
-            && renderer.material.HasProperty(emissionColorTag);
+        if (modelRenderer == null) return false;
+
+        Material material = modelRenderer.sharedMaterial;
+
+        return material != null
+            && material.HasProperty(weaponDropIconTag)
+            && material.HasProperty(emissionLevelTag)
+            && material.HasProperty(emissionColorTag);
     }
 
     private Color GetEmissionColor()
@@ -49,21 +56,10 @@ public class WeaponDrop : DroppedItem
             return;
         }
         Color emissionColor = GetEmissionColor();
-        renderer.material.SetColor(emissionColorTag, emissionColor);
-        renderer.material.SetTexture(weaponDropIconTag, weaponStatus.weaponIcon.texture);
-    }
+        modelRenderer.material.SetColor(emissionColorTag, emissionColor);
+        modelRenderer.material.SetTexture(weaponDropIconTag, weaponStatus.weaponIcon.texture);
 
-    protected override void Start()
-    {
-        base.Start();
-        if (!CheckShaderProperty())
-        {
-            Debug.LogError("Wrong Shader");
-            return;
-        }
-        Color emissionColor = GetEmissionColor();
-        renderer.material.SetColor(emissionColorTag, emissionColor);
-        renderer.material.SetTexture(weaponDropIconTag, weaponStatus.weaponIcon.texture);
+        SetUp();
     }
 
     protected override void ItemReaction(Collider other)

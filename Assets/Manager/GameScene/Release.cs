@@ -151,6 +151,8 @@ public class Release : MonoBehaviour
         loadingPanel.SetActive(true);
         await RewardProcess();
         loadingPanel.SetActive(false);
+        InputManager.OnMoveMousePad();
+
         initFinish = true;
     }
 

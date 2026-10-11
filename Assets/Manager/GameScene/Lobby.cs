@@ -456,7 +456,7 @@ public class Lobby : MonoBehaviour
         mainWeaponStatus = _gameManager.allWeaponStatus.sword_rare_01;
         supWeaponStatus = _gameManager.allWeaponStatus.shield_rare_01;
         cameraAnimator.ResetTrigger(turnReturnTigger);
-
+        InputManager.OnMoveMousePad();
     }
 
 

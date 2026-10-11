@@ -25,20 +25,16 @@ public class InGame : MonoBehaviour
     private NetworkManager _networkManager => NetworkManager.Instance;
     private NetworkRunner _networkRunner => _networkManager.runner;
 
-    private enum InGameStage { Init, Playing, End}
+    private enum InGameStage { Init, Playing, End }
     [Header("InGame Stage")]
     [SerializeField] private InGameStage gameStage = InGameStage.Init;
     public bool IsGamePlaying() => gameStage == InGameStage.Playing;
-
-
-    #region Actor
 
     [Header("Player UseCanvas Part")]
     public HealthBar canvasHealthBar;
     public ColorBar canvasColorBar;
     [Header("Player Follow Camera")]
-    public PlayerCameraFollow playerCameraFollow;
-
+    public InGameCamera inGameCamera;
     [SerializeField] private Camera miniMapCamera;
     private const float miniMapCameraHeight = 20;
     private void MiniMapCameraUpdate()
@@ -46,6 +42,8 @@ public class InGame : MonoBehaviour
         Vector3 targetPosition = _controlling_Character.transform.position;
         miniMapCamera.transform.position = new Vector3(targetPosition.x, targetPosition.y + miniMapCameraHeight, targetPosition.z);
     }
+
+    #region Actor
 
     public List<Character> allPlayerCharacters/* { get; private set; } = new()*/;
 
@@ -235,6 +233,7 @@ public class InGame : MonoBehaviour
         }
 
         SpawnLocalPlayer();
+        ItemDropSystem.ResetItemDropSystem();
         gameStage = InGameStage.Playing;
 
     }
@@ -256,11 +255,25 @@ public class InGame : MonoBehaviour
         InitializeGameScene().Forget();
     }
 
+
+    private void Update()
+    {
+        _player.InGamePlayerInput();
+    }
+
     private void LateUpdate()
     {
         if (gameStage != InGameStage.Playing) return;
         if (_gameManager == null || _controlling_Character == null) return;
-        MiniMapCameraUpdate();
+
+        InputManager.IsOnMoveMousePadKetDown();
+        if (!InputManager.canMoveMousePad)
+        {
+            inGameCamera.ReadCameraRotation();
+            inGameCamera.CameraFollow();
+            MiniMapCameraUpdate();
+        }
+
         UpdateCharacterAndMonsterList();
         if (allPlayerCharacters.Count <= 0) GoRelease();
 
