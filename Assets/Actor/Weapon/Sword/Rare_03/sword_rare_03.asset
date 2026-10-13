@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponStatus
   type: 1
   rare: 3
-  code: 1
+  item_id: 1
   weaponMaterial: {fileID: 2100000, guid: ace578bf6020015479db77562a3fc792, type: 2}
   weaponIcon: {fileID: 21300000, guid: 14043ae703c35fd4a873e2495194fc63, type: 3}
   atkBuffIndex: 1.02

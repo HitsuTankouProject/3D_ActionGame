@@ -467,7 +467,6 @@ public abstract class Character : Actor, IColorDamageable
         moveInput = direction;
     }
 
-    private float turnSpeed = 720.0f;
     /// <summary>
     /// 指定された方向へキャラクターを回転させる。
     /// Y軸方向の値は回転計算から除外する。
@@ -484,6 +483,12 @@ public abstract class Character : Actor, IColorDamageable
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Runner.DeltaTime);
 
     }
+
+    private const float gravity = -9.81f;
+    private const float groundedVelocity = -2f;
+
+    private float verticalVelocity;
+
     /// <summary>
     /// 指定された方向へキャラクターを移動する。
     /// 移動入力がない場合は走行アニメーションを停止する。
@@ -504,14 +509,21 @@ public abstract class Character : Actor, IColorDamageable
 
         // 次のコマンドを実行可能な場合はRun状態へ変更する。
         if (canDoNextCommand) RequestChangeStage(PlayerStage.Run);
-
         // Y軸方向の入力は移動に使用しない。
         moveDirection.y = 0.0f;
 
         // 入力値が1未満の場合は方向ベクトルを正規化する。
         if (moveDirection.sqrMagnitude < 1.0f) moveDirection.Normalize();
         Turn(moveDirection);
-        characterController.Move(moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed * Runner.DeltaTime);
+        float deltaTime = Runner.DeltaTime;
+
+        if (characterController.isGrounded && verticalVelocity < 0f) verticalVelocity = groundedVelocity;
+        verticalVelocity += gravity * deltaTime;
+        // 水平方向と落下速度を合成する。
+        Vector3 velocity = moveDirection * actorStatus.actorBasicStatus.actorMoveSpeed;
+        velocity.y = verticalVelocity;
+
+        characterController.Move(velocity * deltaTime);
     }
 
     #endregion

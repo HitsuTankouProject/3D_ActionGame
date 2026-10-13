@@ -73,22 +73,19 @@ public class Release : MonoBehaviour
     [Header("Release Stage")]
     [SerializeField] private ReleaseStage gameStage = ReleaseStage.Init;
 
-    [Header("Reward Level Point")]
+    [Header("Reward Time")]
     [SerializeField] private int minRewardLevelPoint = 5;
     [SerializeField] private int maxRewardLevelPoint = 10;
     private async UniTask<bool> IsAllowRewardProcess()
     {
         await _networkManager.TestNetworkConnection();
+        bool result = _networkManager.networkMode == NetworkMode.Online && isLogin;
 
-        int averageKilledMonsterLeve = _player.GetAverageKilledMonsterLevel();
-
-        return (_networkManager.networkMode == NetworkMode.Online
-                && isLogin
-                && averageKilledMonsterLeve > 0);
-
-
-
+        if (!result) Debug.LogWarning("Cant Allow Reward Process");
+        return result;
     }
+
+
     private bool TryGetRewardStatus(out Status newStatus)
     {
         newStatus = default;
@@ -109,17 +106,12 @@ public class Release : MonoBehaviour
 
         return _player.TrySetCharacterStatus(_player.choseCharacter, newStatus);
     }
-    private async UniTask RewardProcess()
+    private async UniTask StatusRewardProcess()
     {
-        gameStage = ReleaseStage.RewardTime;
-        bool needReward = await IsAllowRewardProcess();
-        if (!needReward)
-        {
-            gameStage = ReleaseStage.RewardTimeEnd;
-            return;
-        }
+        int averageKilledMonsterLeve = _player.GetAverageKilledMonsterLevel();
+        if (averageKilledMonsterLeve <= 0) return;
 
-        if(!TryGetRewardStatus(out Status newStatus))
+        if (!TryGetRewardStatus(out Status newStatus))
         {
             MessageBoxOn("Reward Status Calculate Error", Color.red).Forget();
 
@@ -132,14 +124,28 @@ public class Release : MonoBehaviour
 
         if (!canDataBaseUpdate)
         {
-            MessageBoxOn("DataBase Cant Update the newStatus", Color.red).Forget();
+            MessageBoxOn("DataBase Cant Update the newStatus", Color.red,2.0f).Forget();
             Debug.LogWarning(" [Release] DataBase Cant Update the newStatus");
         }
-        else MessageBoxOn("NewStatus Update Sucessed", Color.green).Forget();
+        else MessageBoxOn("NewStatus Update Success", Color.green).Forget();
 
-        gameStage = ReleaseStage.RewardTimeEnd;
     }
 
+    private async UniTask ItemsRewardProcess()
+    {
+        PlayerItem[] inGameBag = _player.inGameBag.Items;
+
+        bool canDataBaseUpdate = await _networkManager.RequestUpdateBagData(inGameBag);
+
+        if (!canDataBaseUpdate)
+        {
+            MessageBoxOn("Bag Data Update Failed", Color.red, 2.0f).Forget();
+            Debug.LogWarning("[Release] Bag Data Update Failed");
+            return;
+        }
+
+        MessageBoxOn("Bag Data Update Success", Color.green).Forget();
+    }
 
     [Header("Reward UI")]
     [SerializeField] private GameObject loadingPanel;
@@ -149,7 +155,16 @@ public class Release : MonoBehaviour
     {
         gameStage = ReleaseStage.Init;
         loadingPanel.SetActive(true);
-        await RewardProcess();
+
+        bool isAllowReward = await IsAllowRewardProcess();
+        if (isAllowReward)
+        {
+            gameStage = ReleaseStage.RewardTime;
+            await StatusRewardProcess();
+            await ItemsRewardProcess();
+        }
+        gameStage = ReleaseStage.RewardTimeEnd;
+
         loadingPanel.SetActive(false);
         InputManager.OnMoveMousePad();
 
@@ -158,6 +173,8 @@ public class Release : MonoBehaviour
 
     private async UniTask BackToGameTitle()
     {
+        if (!initFinish) return;
+
         await _networkManager.LeaveRoomAndReturnToLobby();
 
         _networkManager.TryGoGameTitle();
@@ -166,12 +183,19 @@ public class Release : MonoBehaviour
     public void Button_BackToGameTitle()=> BackToGameTitle().Forget();
     public async UniTask BackToLobby()
     {
+        if (!initFinish) return;
+
         await _networkManager.LeaveRoomAndReturnToLobby();
 
         _networkManager.TryGoLobby();
 
     }
-    public void Button_BackToLobby() => BackToLobby().Forget();
+    public void Button_BackToLobby()
+    {
+        if (!initFinish) return;
+
+        BackToLobby().Forget();
+    }
 
 
     private void Start()

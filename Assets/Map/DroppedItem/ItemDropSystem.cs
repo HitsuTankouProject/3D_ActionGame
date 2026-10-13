@@ -110,7 +110,7 @@ public static class ItemDropSystem
 
         for (int rareIndex = 0; rareIndex < dropWeaponRareWeight.Length; rareIndex++)
         {
-            if (randomWeight < dropWeaponRareWeight[rareIndex])return (uint)(rareIndex + 1);
+            if (randomWeight < dropWeaponRareWeight[rareIndex]) return (uint)(rareIndex + 1);
             randomWeight -= dropWeaponRareWeight[rareIndex];
         }
 

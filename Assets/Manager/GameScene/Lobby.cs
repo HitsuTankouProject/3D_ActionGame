@@ -268,24 +268,39 @@ public class Lobby : MonoBehaviour
         }
 
     }
+
+    private void CloseAllThePickWeaponButtons()
+    {
+        for (int i = 0; i < pickWeaponButtons.Length; i++)
+            pickWeaponButtons[i].gameObject.SetActive(false);
+    }
     private void ChangePickWeaponButtons()
     {
         OpenTargetWeapon();
-        List<PlayerItemData> allTargetWeaponData = _player.bag.GetAllTargetWeaponData(nowShowingWeaponType);
+        CloseAllThePickWeaponButtons();
+        PlayerItem[] allTargetWeaponData = _player.bag.GetAllTargetWeaponData(nowShowingWeaponType);
+        Debug.Log(allTargetWeaponData.Length);
 
-        for (int i = 0; i < pickWeaponButtons.Length;)
+        for(int i = 0; i < allTargetWeaponData.Length; i++)
         {
-            if (i >= allTargetWeaponData.Count)
-            {
-                pickWeaponButtons[i].gameObject.SetActive(false);
-                i++;
-                continue;
-            }
-            PlayerItemData data = allTargetWeaponData[i];
-            if (!_gameManager.TryGetTargetWeaponStatus(nowShowingWeaponType, data.rare, out WeaponStatus weaponStatus)) continue;
+            if (!_gameManager.TryGetTargetWeaponStatus(nowShowingWeaponType, allTargetWeaponData[i].rare, out WeaponStatus weaponStatus)) continue;
+            pickWeaponButtons[i].gameObject.SetActive(true);
             pickWeaponButtons[i].SetupWeaponPick(weaponStatus);
-            i++;
+
         }
+
+        //for (int i = 0; i < pickWeaponButtons.Length;)
+        //{
+        //    if (i >= allTargetWeaponData.Length)
+        //    {
+        //        pickWeaponButtons[i].gameObject.SetActive(false);
+        //        i++;
+        //        continue;
+        //    }
+        //    if (!_gameManager.TryGetTargetWeaponStatus(nowShowingWeaponType, allTargetWeaponData[i].rare, out WeaponStatus weaponStatus)) continue;
+        //    pickWeaponButtons[i].SetupWeaponPick(weaponStatus);
+        //    i++;
+        //}
     }
 
     public void Button_NowPickSword()
@@ -337,7 +352,7 @@ public class Lobby : MonoBehaviour
    /* [SerializeField] */private GameObject bagObject;
     #endregion
 
-    private void ChooseAllTheObject()
+    private void CloseAllTheObject()
     {
         statusObject.SetActive(false);
         weaponPickObject.SetActive(false);
@@ -347,7 +362,7 @@ public class Lobby : MonoBehaviour
 
     public void OpenCharacterStatusObject()
     {
-        ChooseAllTheObject();
+        CloseAllTheObject();
         nowShowingWeaponType = WeaponType.None;
         CameraMove(nowShowingWeaponType);
         ChangeNowShowingCharacterStatus();
@@ -357,17 +372,14 @@ public class Lobby : MonoBehaviour
     }
     public void OpenWeaponPickObject()
     {
-        ChooseAllTheObject();
+        CloseAllTheObject();
         OpenWeaponButton();
         weaponPickObject.SetActive(true);
 
     }
-
-
-
     public void OpenPlayerBagObject()
     {
-        ChooseAllTheObject();
+        CloseAllTheObject();
         bagObject.gameObject.SetActive(true);
     }
 

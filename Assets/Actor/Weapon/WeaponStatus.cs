@@ -10,15 +10,10 @@ public class WeaponStatus : ScriptableObject
     [Header("Weapon Information")]
     
     public WeaponType type;
-    [Range(1, 5)] public uint rare;
-    [Range(1, 42)] public uint item_id;
+    [Range(1, 5)] public uint rare = 1;
+    [Range(1, 42)] public uint item_id = 1;
 
-    private string item_code => $"{type.ToString()}_{rare}_{item_id}";
-    public PlayerItemData GetPlayerItemData()
-    {
-        PlayerItemData result = new PlayerItemData(item_code);
-        return result;
-    }
+    public string item_code => $"{type.ToString()}_{rare}_{item_id}";
 
 
     /// <summary>

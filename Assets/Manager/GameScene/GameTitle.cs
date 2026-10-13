@@ -120,6 +120,8 @@ public class GameTitle : MonoBehaviour
 
     public async void AccountLogout()
     {
+        if (!initFinish) return;
+
         bool success = await _networkManager.RequestAccountOut();
         if (success)
         {
@@ -138,6 +140,8 @@ public class GameTitle : MonoBehaviour
 
     public void OpenLoginPanel()
     {
+        if (!initFinish) return;
+
         OffAllThePanel();
         loginPanel.SetActive(true);
     }
@@ -164,6 +168,7 @@ public class GameTitle : MonoBehaviour
 
     public async void LoginPanel_AccountLogin()
     {
+
         if(_networkManager.logMode == LogMode.Login)
         {
             MessageBoxOn("アカウント既にログインしました　", Color.green).Forget();
@@ -175,6 +180,7 @@ public class GameTitle : MonoBehaviour
             MessageBoxOn("　アカウントログイン成功　", Color.green).Forget();
             OffAllThePanel();
             await GetAccountData();
+            await UniTask.Delay(1000);
             MoveToLobby();
         }
         else MessageBoxOn("　アカウントログイン失敗　", Color.red).Forget();
@@ -197,6 +203,8 @@ public class GameTitle : MonoBehaviour
 
     public void OpenAccountCreatePanel()
     {
+        if (!initFinish) return;
+
         OffAllThePanel();
         accountCreatePanel.SetActive(true);
     }
@@ -251,6 +259,7 @@ public class GameTitle : MonoBehaviour
         accountCreatePanel.gameObject.SetActive(false);
     }
 
+    private bool initFinish = false;
     private void Init()
     {
         
@@ -260,6 +269,8 @@ public class GameTitle : MonoBehaviour
 
         if (_gameManager == null) return;
         _gameManager.UpdateGameScene(sceneName);
+
+        initFinish = true;
     }
 
     private async UniTask TestNetworkConnection()
@@ -282,6 +293,7 @@ public class GameTitle : MonoBehaviour
 
     public void MoveToLobby()
     {
+        if (!initFinish) return;
         _networkManager.TryGoLobby();
     }
     private void Start()

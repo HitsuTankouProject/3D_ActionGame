@@ -81,9 +81,6 @@ public class InGame : MonoBehaviour
     [SerializeField] private Transform[] characterSpawnPoints;
     //private Status CharacterSpawnStatus() => _player.TargetCharacterStatus();
 
-
-
-
     const float spawnInterval = 2.0f;
     private void GetSpawnTransform(PlayerRef playerRef, out Vector3 spawnPosition, out Quaternion spawnRotation)
     {
@@ -181,13 +178,13 @@ public class InGame : MonoBehaviour
     }
 
 
-    public List<Monster> allMonsters { get; private set; } = new();
-    public void RegisterMonster(Monster monster)
-    {
-        if (monster == null || allMonsters.Contains(monster)) return;
-        allMonsters.Add(monster);
+    public List<Monster> allMonsters;
+    //public void RegisterMonster(Monster monster)
+    //{
+    //    if (monster == null || allMonsters.Contains(monster)) return;
+    //    allMonsters.Add(monster);
 
-    }
+    //}
     public void UnregisterMonster(Monster monster)
     {
         if (monster == null || !allMonsters.Remove(monster)) return;
@@ -195,7 +192,7 @@ public class InGame : MonoBehaviour
 
     public void UpdateCharacterAndMonsterList()
     {
-        allMonsters.RemoveAll(character => character == null);
+        allMonsters.RemoveAll(monster => monster == null);
         allPlayerCharacters.RemoveAll(character => character == null);
 
     }
@@ -232,8 +229,10 @@ public class InGame : MonoBehaviour
             return;
         }
 
+        _player.ResetInGameBag();
         SpawnLocalPlayer();
         ItemDropSystem.ResetItemDropSystem();
+        inGameCamera.CameraSetUp();
         gameStage = InGameStage.Playing;
 
     }
@@ -258,6 +257,8 @@ public class InGame : MonoBehaviour
 
     private void Update()
     {
+        if (gameStage != InGameStage.Playing) return;
+        if (_gameManager == null || _controlling_Character == null) return;
         _player.InGamePlayerInput();
     }
 

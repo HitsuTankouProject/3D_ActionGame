@@ -15,7 +15,7 @@ public class Player : MonoBehaviour, ICharacterInPut
     /// <summary>
     /// プレイヤーが所有しているバッグデータ。
     /// </summary>
-    public PlayerBag bag { get; private set; }
+    public PlayerBag bag;/* { get; private set; }*/
     /// <summary>
     /// プレイヤーのバッグデータを設定する。
     /// </summary>
@@ -25,6 +25,11 @@ public class Player : MonoBehaviour, ICharacterInPut
         // バッグデータが存在しない、またはアイテムが存在しない場合は設定しない。
         if (targetData == null || targetData.Items.Length == 0) return;
         bag = targetData;
+        foreach (var item in bag.Items)
+        {
+            item.SeparateAllElements();
+        }
+
     }
     /// <summary>
     /// Adventurerの現在のステータス。
@@ -195,7 +200,11 @@ public class Player : MonoBehaviour, ICharacterInPut
     /// <summary>
     /// InGame中に使用するバッグデータ。
     /// </summary>
-    public PlayerBag inGameBag;
+    public PlayerBag inGameBag { get; private set; } = new();
+    public void ResetInGameBag() => inGameBag.ResetPlayerBag();
+    public void AddToInGameBag(string itemCode) => inGameBag.AddToPlayerBag(itemCode);
+
+
     /// <summary>
     /// 倒したモンスターのレベル一覧。
     /// </summary>
@@ -218,8 +227,6 @@ public class Player : MonoBehaviour, ICharacterInPut
     /// </summary>
     /// <param name="level">倒したモンスターのレベル。</param>
     public void AddKillMonsterStatus(int level) => killedMonsterLevel.Add(level);
-
-
     public void InGamePlayerInput()
     {
         if(controlling_Character == null) return;
@@ -232,13 +239,6 @@ public class Player : MonoBehaviour, ICharacterInPut
 
         CharacterInPut.CharacterMove(this);
     }
-
-
-
-
-
-
-
 
     #region Release
     /// <summary>

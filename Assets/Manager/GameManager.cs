@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour
     {
         swordStatus = default;
         // 使用可能なレアリティの範囲外の場合は取得しない。
-        if (rare <= 0 || rare > 5) return false;
+        if (rare < 1 || rare > 5) return false;
         // レアリティに対応するSwordのWeaponStatusを取得する。
         swordStatus = rare switch
         {
@@ -143,7 +143,7 @@ public class GameManager : MonoBehaviour
     {
         swordStatus = default;
         // 使用可能なレアリティの範囲外の場合は取得しない。
-        if (rare <= 0 || rare > 5) return false;
+        if (rare < 1 || rare > 5) return false;
         // レアリティに対応するShieldのWeaponStatusを取得する。
         swordStatus = rare switch
         {

@@ -1,14 +1,24 @@
 ﻿using UnityEngine;
 using Cysharp.Threading.Tasks;
 
-public class TreasureBox : MonoBehaviour, IDamageable, IItemDrop
+public class TreasureBox : MonoBehaviour, IDamageable, IItemDrop, ISwitcher
 {
     [SerializeField] private Transform boxTop;
-    private const float openTime = 0.25f;
-    private readonly Vector3 openAngle = new Vector3(120, 0, 0);
-    private readonly Vector3 closeAngle = Vector3.zero;
+    [SerializeField] private float openTime = 0.25f;
+    public Transform switchPart => boxTop;
+    public float switchTime => openTime;
+
+    public Vector3 openLocalRotationAngle => new Vector3(120, 0, 0);
+    public Vector3 closeLocalRotationAngle => Vector3.zero;
+
+    public Vector3 openLocalPosition => default;
+    public Vector3 openLocalScale => default;
+    public Vector3 closeLocalPosition => default;
+    public Vector3 closeLocalScale => default;
 
     private bool isOpened = false;
+
+    private void Start() => Switcher.SwitchInRotationClose(this);
     private async UniTask OpenTheBox()
     {
         if (boxTop == null)
@@ -17,24 +27,8 @@ public class TreasureBox : MonoBehaviour, IDamageable, IItemDrop
             return;
         }
         isOpened = true;
-        Quaternion startRotation = Quaternion.Euler(closeAngle);
-        Quaternion targetRotation = Quaternion.Euler(openAngle);
-
-        float elapsedTime = 0.0f;
-
-        while (elapsedTime < openTime)
-        {
-            await UniTask.Yield(PlayerLoopTiming.Update, this.GetCancellationTokenOnDestroy());
-            elapsedTime += Time.deltaTime;
-
-            float progress = Mathf.Clamp01(elapsedTime / openTime);
-            boxTop.localRotation = Quaternion.Slerp(startRotation, targetRotation, progress);
-
-
-        }
-
-        boxTop.localRotation = targetRotation;
-        this.DropMultiWeaponIn(transform.position , 4);
+        await Switcher.SwitchInRotation(this, Switcher.SwitchStage.Open);
+        this.DropMultiWeaponIn(transform.position , 10);
     }
 
     public void TakeDamage(int damage)

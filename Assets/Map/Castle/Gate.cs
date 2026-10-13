@@ -1,69 +1,41 @@
 ﻿using Cysharp.Threading.Tasks;
-using TMPro;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
+using System.Collections.Generic;
 
-public class Gate : MonoBehaviour
+public class Gate : MonoBehaviour, ISwitcher
 {
-    public enum GateStage { Close, Open }
-    [SerializeField] private GateStage stage;
+    private InGame _inGame => InGame.Instance;
+
+    public Transform switchPart => this.transform;
     [SerializeField] private float moveTime = 1.0f;
-    [SerializeField] private float openHeight = 2.25f;  
-    [SerializeField] private float closeHeight;
+    public float switchTime => moveTime;
 
-    private Vector3 TargetGatePosition()
-    {
-        Vector3 result = transform.localPosition;
-        result.y = stage == GateStage.Open ? openHeight : closeHeight;
-        return result;
-    }
-    private async UniTask GateAction(GateStage gateStage)
-    {
-        stage = gateStage;
-        Vector3 start = transform.localPosition;
-        Vector3 final = TargetGatePosition();
-        float timer = 0;
+    public Vector3 openLocalPosition => new Vector3(transform.localPosition.x, 2.25f, transform.localPosition.z);
+    public Vector3 openLocalRotationAngle => default;
+    public Vector3 openLocalScale => default;
 
-        while (moveTime > timer)
+
+    public Vector3 closeLocalPosition => new Vector3(transform.localPosition.x, -0.2f, transform.localPosition.z);
+    public Vector3 closeLocalRotationAngle => default;
+    public Vector3 closeLocalScale => default;
+
+    [SerializeField] private List<Monster> monsters;
+
+    public void OpenGate() => Switcher.SwitchInPositionOpen(this);
+    public void CloseGate() => Switcher.SwitchInPositionClose(this);
+
+    private void Start() => OpenGate();
+    private bool isOpen = false;
+    public void LateUpdateGateStage()
+    {
+        if (isOpen) return;
+        if (!_inGame.IsGamePlaying()) return;
+        monsters.RemoveAll(monster => monster == null);
+        if (monsters.Count <= 0)
         {
-            timer += Time.deltaTime;
-
-            float progress = Mathf.Clamp01(timer / moveTime);
-            transform.localPosition = Vector3.Lerp(start, final, progress);
-
-            await UniTask.Yield(PlayerLoopTiming.Update);
-
-        }
-
-        transform.localPosition = final;
-
-    }
-
-    public void OpenGate() => GateAction(GateStage.Open).Forget();
-    public void CloseGate() => GateAction(GateStage.Close).Forget();
-
-    private void Start()
-    {
-        OpenGate();
-    }
-
-    public bool open;
-    public bool close;
-    private void Update()
-    {
-        
-        if (open)
-        {
-            open = false;
+            isOpen = true;
             OpenGate();
         }
-
-        if (close)
-        {
-            close = false;
-            CloseGate();
-        }
     }
-
 
 }

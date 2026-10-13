@@ -709,6 +709,8 @@ public abstract class Monster : Actor, IItemDrop
     {
         if (!Object.HasStateAuthority) return;
         base.Death();
+        InGame.Instance?.UnregisterMonster(this);
+        this.DropMultiColorBallIn(transform.position, 3);
 
     }
     /// <summary>
@@ -742,8 +744,7 @@ public abstract class Monster : Actor, IItemDrop
     /// </summary>
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        InGame.Instance?.UnregisterMonster(this);
-        this.DropMultiColorBallIn(transform.position,3);
+
     }
 
     #endregion

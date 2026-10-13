@@ -1613,11 +1613,11 @@ GameObject:
   - component: {fileID: 7468834943659255671}
   - component: {fileID: 7832837941453269495}
   - component: {fileID: 2953463871808081414}
+  - component: {fileID: 8035699167460335415}
   - component: {fileID: 3714336361411374341}
   - component: {fileID: 7364968044566891068}
   - component: {fileID: 3952216982836474967}
   - component: {fileID: 8976660591382361157}
-  - component: {fileID: 8035699167460335415}
   m_Layer: 8
   m_Name: Adventurer
   m_TagString: Untagged
@@ -1657,12 +1657,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adventurer
   actorBodyMesh: {fileID: 3207542302341819235}
+  actorAnimator: {fileID: 3714336361411374341}
   actorStatus:
     actorBasicStatus: {fileID: 11400000, guid: 67b2ca6b7f608a54b8844436a65fde23, type: 2}
-  actorAnimator: {fileID: 3714336361411374341}
   maxHp: 0
   _nowHp: 0
   healthBar: {fileID: 183388505679992708}
+  _nowDefScale: 0
   mainWeapon: {fileID: 430171420856479877}
   mainWeaponTransform: {fileID: 2095094448930138498}
   _canBeTrack:
@@ -1707,7 +1708,6 @@ MonoBehaviour:
     otherMaterials:
     - {fileID: 2100000, guid: c3916eeccf5268e47b915eabda39d65b, type: 2}
     - {fileID: 2100000, guid: 0682bc3b87d37f34f9940d16b9bfc725, type: 2}
-  lostColorLevel: 0
   nowColorCharge: 100
 --- !u!143 &2953463871808081414
 CharacterController:
@@ -1734,6 +1734,33 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.75, z: 0}
+--- !u!54 &8035699167460335415
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520019429336728101}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
 --- !u!95 &3714336361411374341
 Animator:
   serializedVersion: 7
@@ -1836,33 +1863,6 @@ MonoBehaviour:
     MinImpactfulCollisionAlignment: 0.3
     ImpactStartCorrectionTime: 0.1
     ImpactCorrectionTimeComplete: 0.3
---- !u!54 &8035699167460335415
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8520019429336728101}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!1 &9197825386154252676
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@
 
 public class WeaponDrop : DroppedItem
 {
+    private GameManager _gameManager => GameManager.Instance;
     public override ItemType type => ItemType.Weapon;
 
 
@@ -64,6 +65,15 @@ public class WeaponDrop : DroppedItem
 
     protected override void ItemReaction(Collider other)
     {
+        if (!setUpDone) return;
+        if (other.TryGetComponent<Character>(out Character character))
+        {
+            if (character != _gameManager.gamePlayer.controlling_Character) return;
+            _gameManager.gamePlayer.AddToInGameBag(weaponStatus.item_code);
+            ReturnToPool();
+
+        }
+
 
     }
 }
