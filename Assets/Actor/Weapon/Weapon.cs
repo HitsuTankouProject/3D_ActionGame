@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using NUnit.Framework;
+using UnityEngine;
 
 /// <summary>
 /// 防御行動を行うオブジェクトが実装するインターフェース。
@@ -104,6 +105,7 @@ public abstract class Weapon : MonoBehaviour
         // 武器の当たり判定を無効にする。
         weaponCollider.enabled = false;
     }
+
     /// <summary>
     /// 武器のColliderが他のColliderと接触した際の処理を行う。
     /// 派生クラスで武器ごとの攻撃・防御処理を実装する。

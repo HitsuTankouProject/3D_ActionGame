@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.VFX;
+using System.Collections.Generic;
 
 [System.Serializable]
 public abstract class WeaponEffect
 {
 
-    [SerializeField] protected VisualEffectAsset[] allEffects;
+    [SerializeField] protected List<VisualEffectAsset> allEffects;
     [SerializeField] protected bool isPlayEffect;
-
 
 
 
