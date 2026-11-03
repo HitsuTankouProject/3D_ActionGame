@@ -88,10 +88,10 @@ MonoBehaviour:
   - title: Minimal
     position:
       serializedVersion: 2
-      x: -126
-      y: -811
-      width: 474
-      height: 1298
+      x: -727
+      y: -813
+      width: 1308
+      height: 1981
     contents:
     - model: {fileID: 114023846229194376}
       id: 0
@@ -112,8 +112,8 @@ MonoBehaviour:
     serializedVersion: 2
     x: -2340
     y: -953
-    width: 2688
-    height: 1814
+    width: 3179
+    height: 2056
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
